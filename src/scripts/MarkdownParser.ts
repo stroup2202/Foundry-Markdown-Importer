@@ -78,7 +78,7 @@ class MarkdownParser {
 
     private _getSenses(text: string): object {
         const sensesObject = {};
-        const match = [...text.match(/\*\*Senses\*\* (.*), (passive Perception )([0-9]+)/)];
+        const match = [...text.match(/\*\*Senses\*\* ?(.*)?,? (passive Perception) ([0-9]+)/)];
         sensesObject["vision"] = match[1];
         sensesObject[match[2]] = match[3];
         return sensesObject;
