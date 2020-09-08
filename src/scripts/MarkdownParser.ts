@@ -54,7 +54,7 @@ class MarkdownParser {
         savesMatch.forEach((save) => {
             savesObject[save[1]] = save[2];
         })
-        return savesMatch;
+        return savesObject;
     }
 
     private _getSkills(text: string): object {
@@ -88,9 +88,62 @@ class MarkdownParser {
         return [...text.match(/\*\*Languages\*\* (.*)/)][1];
     }
 
-    private _getChallenge(text: string):object{
+    private _getChallenge(text: string): object {
         const match = [...text.match(/\*\*Challenge\*\* ([0-9]+) \((.*)\)/)]
-        return {CR:match[1],XP:match[2]};
+        return {CR: match[1], XP: match[2]};
+    }
+
+    private _isWeaponAttack(text: string): boolean {
+        return !!text.match(/_(\w+) Weapon Attack:_/g);
+    }
+
+    private _getAttackRange(text: string): object {
+        let match = text.match(/([0-9]+)( |-)(ft|feet|foot)( line| cone| cube| sphere)?/)
+        if (!match) return ;
+        match = [...match];
+        return {value: match[1], units: match[3], shape:match[4]}
+    }
+
+    private _getAttackDamage(text: string): object {
+        const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( \+ ([0-9]+))?\) (\w+) damage/g)];
+        const attackObject = [];
+        match.forEach((attack) => {
+            attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4]]);
+        })
+        return attackObject
+    }
+
+    private _getAttackSave(text:string): object{
+        let match = text.match(/DC ([0-9]+) (\w+)/);
+        if (!match) return ;
+        match =[...match];
+        const saveObject ={};
+        saveObject["DC"] = match[1];
+        saveObject["ability"] = match[2];
+        return saveObject;
+    }
+
+    private _getAbilities(text: string): object {
+        const match = [...text.matchAll(/\*\*\*(.*?)\*\*\* (.*)/g)];
+        const abilitiesObject = {};
+        match.forEach((ability) => {
+            abilitiesObject[ability[1]] = {
+                description: ability[2],
+                range: {
+                    value: null,
+                    units: null
+                },
+                target: {
+                    value: null
+                },
+                damage: []
+            };
+            abilitiesObject[ability[1]].range = this._getAttackRange(ability[2]);
+            abilitiesObject[ability[1]].target.value = 1;
+            abilitiesObject[ability[1]].damage = this._getAttackDamage(ability[2]);
+            abilitiesObject[ability[1]].save = this._getAttackSave(ability[2]);
+        })
+        return abilitiesObject;
     }
 
     public parser(markdownText) {
@@ -106,6 +159,7 @@ class MarkdownParser {
         const creatureSenses = this._getSenses(markdownText);
         const creatureLanguages = this._getLanguages(markdownText);
         const creatureChallenge = this._getChallenge(markdownText);
+        const creatureAbilities = this._getAbilities(markdownText);
         console.log(creatureArmor);
     }
 }

@@ -9,3 +9,7 @@ Hooks.on("renderSidebarTab", async (app, html) => {
         html.find(".directory-footer").append(button);
     }
 })
+
+Hooks.on("renderActorSheet", (sheet)=>{
+    console.log(sheet);
+})
