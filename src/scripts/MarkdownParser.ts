@@ -93,12 +93,8 @@ class MarkdownParser {
         return {CR: match[1], XP: match[2]};
     }
 
-    private _isWeaponAttack(text: string): boolean {
-        return !!text.match(/_(\w+) Weapon Attack:_/g);
-    }
-
     private _getAttackRange(text: string): object {
-        let match = text.match(/([0-9]+)( |-)(ft|feet|foot)( line| cone| cube| sphere)?/)
+        let match = text.match(/([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/)
         if (!match) return;
         match = [...match];
         return {value: match[1], units: match[3], shape: match[4]}
@@ -123,25 +119,24 @@ class MarkdownParser {
         return saveObject;
     }
 
+    private _getAttack(text:string): object{
+        const attackObject = {};
+        attackObject['damage'] = this._getAttackDamage(text);
+        attackObject['range'] = this._getAttackRange(text);
+        attackObject['save'] = this._getAttackSave(text);
+        attackObject['target'] = 1;
+        return attackObject;
+    }
+
     private _getAbilities(text: string): object {
         const match = [...text.matchAll(/\*\*\*(.*?)\*\*\* (.*)/g)];
         const abilitiesObject = {};
         match.forEach((ability) => {
             abilitiesObject[ability[1]] = {
                 description: ability[2],
-                range: {
-                    value: null,
-                    units: null
-                },
-                target: {
-                    value: null
-                },
-                damage: []
+                data : {}
             };
-            abilitiesObject[ability[1]].range = this._getAttackRange(ability[2]);
-            abilitiesObject[ability[1]].target.value = 1;
-            abilitiesObject[ability[1]].damage = this._getAttackDamage(ability[2]);
-            abilitiesObject[ability[1]].save = this._getAttackSave(ability[2]);
+            abilitiesObject[ability[1]].data = this._getAttack(ability[2]);
         })
         return abilitiesObject;
     }
@@ -152,19 +147,10 @@ class MarkdownParser {
         match.forEach((action)=>{
             actionObject[action[1]] = {
                 description: action[4],
-                range: {
-                    value: null,
-                    units: null
-                },
-                target: {
-                    value: 1
-                },
-                damage: [],
+                data: {},
                 cost: 1
             };
-            actionObject[action[1]].range = this._getAttackRange(action[4]);
-            actionObject[action[1]].damage = this._getAttackDamage(action[4]);
-            actionObject[action[1]].save = this._getAttackSave(action[4]);
+            actionObject[action[1]].data = this._getAttack(action[4]);
             actionObject[action[1]].cost = action[3]? action[3] : 1;
         })
         return actionObject;
