@@ -99,9 +99,9 @@ class MarkdownParser {
 
     private _getAttackRange(text: string): object {
         let match = text.match(/([0-9]+)( |-)(ft|feet|foot)( line| cone| cube| sphere)?/)
-        if (!match) return ;
+        if (!match) return;
         match = [...match];
-        return {value: match[1], units: match[3], shape:match[4]}
+        return {value: match[1], units: match[3], shape: match[4]}
     }
 
     private _getAttackDamage(text: string): object {
@@ -113,11 +113,11 @@ class MarkdownParser {
         return attackObject
     }
 
-    private _getAttackSave(text:string): object{
+    private _getAttackSave(text: string): object {
         let match = text.match(/DC ([0-9]+) (\w+)/);
-        if (!match) return ;
-        match =[...match];
-        const saveObject ={};
+        if (!match) return;
+        match = [...match];
+        const saveObject = {};
         saveObject["DC"] = match[1];
         saveObject["ability"] = match[2];
         return saveObject;
@@ -146,6 +146,30 @@ class MarkdownParser {
         return abilitiesObject;
     }
 
+    private _getLegendaryActions(text: string): object {
+        const match = [...text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g)];
+        const actionObject = {};
+        match.forEach((action)=>{
+            actionObject[action[1]] = {
+                description: action[4],
+                range: {
+                    value: null,
+                    units: null
+                },
+                target: {
+                    value: 1
+                },
+                damage: [],
+                cost: 1
+            };
+            actionObject[action[1]].range = this._getAttackRange(action[4]);
+            actionObject[action[1]].damage = this._getAttackDamage(action[4]);
+            actionObject[action[1]].save = this._getAttackSave(action[4]);
+            actionObject[action[1]].cost = action[3]? action[3] : 1;
+        })
+        return actionObject;
+    }
+
     public parser(markdownText) {
         const creatureName = this._getCreatureName(markdownText);
         const creatureSizeAndAlignment = this._getCreatureSizeAndAlignment(markdownText);
@@ -160,6 +184,7 @@ class MarkdownParser {
         const creatureLanguages = this._getLanguages(markdownText);
         const creatureChallenge = this._getChallenge(markdownText);
         const creatureAbilities = this._getAbilities(markdownText);
+        const creatureLegendaryActions = this._getLegendaryActions(markdownText);
         console.log(creatureArmor);
     }
 }
