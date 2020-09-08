@@ -119,7 +119,7 @@ class MarkdownParser {
         return saveObject;
     }
 
-    private _getAttack(text:string): object{
+    private _getAttack(text: string): object {
         const attackObject = {};
         attackObject['damage'] = this._getAttackDamage(text);
         attackObject['range'] = this._getAttackRange(text);
@@ -128,15 +128,22 @@ class MarkdownParser {
         return attackObject;
     }
 
+    private _getSpellcastingStats(text: string): object {
+        const spellcastingLevel = [...text.match(/([0-9]+)\w{1,2}-level spellcaster/)];
+        const spellcastingModifier = [...text.match(/spellcasting ability is (\w+)/)];
+        return {level: spellcastingLevel[1], modifier: spellcastingModifier[1]};
+    }
+
     private _getAbilities(text: string): object {
         const match = [...text.matchAll(/\*\*\*(.*?)\*\*\* (.*)/g)];
         const abilitiesObject = {};
         match.forEach((ability) => {
             abilitiesObject[ability[1]] = {
                 description: ability[2],
-                data : {}
+                data: {}
             };
-            abilitiesObject[ability[1]].data = this._getAttack(ability[2]);
+            if (ability[1] === 'Spellcasting.') abilitiesObject[ability[1]].data = this._getSpellcastingStats(ability[2]);
+            else abilitiesObject[ability[1]].data = this._getAttack(ability[2]);
         })
         return abilitiesObject;
     }
@@ -144,16 +151,26 @@ class MarkdownParser {
     private _getLegendaryActions(text: string): object {
         const match = [...text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g)];
         const actionObject = {};
-        match.forEach((action)=>{
+        match.forEach((action) => {
             actionObject[action[1]] = {
                 description: action[4],
                 data: {},
                 cost: 1
             };
             actionObject[action[1]].data = this._getAttack(action[4]);
-            actionObject[action[1]].cost = action[3]? action[3] : 1;
+            actionObject[action[1]].cost = action[3] ? action[3] : 1;
         })
         return actionObject;
+    }
+
+    private _getSpells(text: string): object {
+        const matchedSpells = [...text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g)];
+        const spellsObject = {};
+        matchedSpells.forEach((spell) => {
+            const typeOfSpell = spell[2] ? spell[2] : spell[1];
+            spellsObject[typeOfSpell] = spell[3].replace("*", "").split(", ");
+        })
+        return spellsObject;
     }
 
     public parser(markdownText) {
@@ -171,6 +188,7 @@ class MarkdownParser {
         const creatureChallenge = this._getChallenge(markdownText);
         const creatureAbilities = this._getAbilities(markdownText);
         const creatureLegendaryActions = this._getLegendaryActions(markdownText);
+        const creatureSpells = this._getSpells(markdownText);
         console.log(creatureArmor);
     }
 }
