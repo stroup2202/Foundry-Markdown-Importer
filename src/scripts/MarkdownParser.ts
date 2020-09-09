@@ -31,22 +31,32 @@ class MarkdownParser {
     };
 
     private _getCreatureName(text: string): string {
-        return [...text.match(/> ## (.+)/)][1];
+        return text.match(/> ## (.+)/)[1];
     }
 
-    private _getCreatureSizeAndAlignment(text: string): string[] {
-        const match = [...text.match(/\*(\w+) (\w+).*, (.*?)\*/)];
-        return [match[1], match[2], match[3]];
+    private _getCreatureSizeAndAlignment(text: string): object {
+        const match = text.match(/\*(\w+) (\w+).*, (.*?)\*/);
+        return {
+            size: match[1],
+            race: match[2],
+            alignment: match[3]
+        }
     }
 
-    private _getCreatureACAndSource(text: string): [string, string] {
+    private _getCreatureACAndSource(text: string): object {
         const match = text.match(/ \*\*Armor Class\*\* ([0-9]+) ?(.*)?/);
-        return [match[1], match[2]];
+        return {
+            AC: match[1],
+            source: match[2]
+        };
     }
 
-    private _getCreatureHP(text: string): [string, string] {
-        const match = [...text.match(/ \*\*Hit Points\*\* ([0-9]+) \((.*?)\)/)];
-        return [match[1], match[2]];
+    private _getCreatureHP(text: string): object {
+        const match = text.match(/ \*\*Hit Points\*\* ([0-9]+) \((.*?)\)/);
+        return {
+            HP: match[1],
+            formula: match[2]
+        };
     }
 
     private _getCreatureSpeed(text: string): object {
@@ -66,8 +76,8 @@ class MarkdownParser {
     private _getSavingThrowMods(text: string): object {
         const savesObject = {};
         const match = text.match(/\*\*Saving Throws\*\* (.*)/);
-        if (!match) return ;
-        const savesMatch = [...match[1].matchAll(/ (\w{3}) \+([0-9]+)/g)];
+        if (!match) return;
+        const savesMatch = [...match[1].matchAll(/(\w{3}) \+([0-9]+)/g)];
         savesMatch.forEach((save) => {
             savesObject[save[1]] = save[2];
         })
@@ -106,8 +116,8 @@ class MarkdownParser {
     }
 
     private _getChallenge(text: string): object {
-        const match = text.match(/\*\*Challenge\*\* ([0-9]+\/[0-9]+) \((.*)\)/)
-        return {CR: match[1], XP: match[2]};
+        const match = text.match(/\*\*Challenge\*\* (([0-9]+\/[0-9]+)|([0-9]+)) \((.*)\)/)
+        return {CR: match[1], XP: match[4]};
     }
 
     private _getAttackRange(text: string): object {
@@ -209,6 +219,7 @@ class MarkdownParser {
         return Math.floor(abilityScore / 2 - 5);
     }
 
+    //TODO: Make this function use the attack to hit modifier and damage modifier to determine prof
     private _getProficiency(stats: object, saves: object): number {
         return saves[Object.keys(saves)[0]] - this._getAbilityModifier(stats[Object.keys(saves)[0]]);
     }
@@ -230,8 +241,8 @@ class MarkdownParser {
         const creatureSkills = this._getSkills(text);
         const skillsObject = {};
         for (const skill in creatureSkills) {
-            if(!creatureSkills.hasOwnProperty(skill)) continue;
-            skillsObject[this._skillsToShortMap[skill]] = {value: Math.floor(creatureSkills[skill]/proficiency)};
+            if (!creatureSkills.hasOwnProperty(skill)) continue;
+            skillsObject[this._skillsToShortMap[skill]] = {value: Math.floor(creatureSkills[skill] / proficiency)};
         }
         return skillsObject
     }
@@ -258,22 +269,22 @@ class MarkdownParser {
             data: {
                 abilities: this._makeAbilitiesStructure(creatureStats, creatureSaves, creatureProficiency),
                 attributes: {
-                    ac: {value: creatureArmor[0]},
+                    ac: {value: creatureArmor['AC']},
                     hp: {
-                        value: creatureHP[0],
-                        formula: creatureHP[1]
+                        value: creatureHP['HP'],
+                        formula: creatureHP['formula']
                     },
                     speed: this._getCreatureSpeed(markdownText),
                     prof: creatureProficiency
                 },
                 details: {
-                    alignment: creatureSizeAndAlignment[2],
-                    type: creatureSizeAndAlignment[1],
-                    cr: creatureChallenge["CR"],
-                    xp: {value: creatureChallenge["XP"]}
+                    alignment: creatureSizeAndAlignment['alignment'],
+                    type: creatureSizeAndAlignment['race'],
+                    cr: creatureChallenge['CR'],
+                    xp: {value: creatureChallenge['XP']}
                 },
                 traits: {
-                    size: creatureSizeAndAlignment[0]
+                    size: creatureSizeAndAlignment['size']
                 },
                 skills: this._makeSkillsStructure(markdownText, creatureProficiency)
 
