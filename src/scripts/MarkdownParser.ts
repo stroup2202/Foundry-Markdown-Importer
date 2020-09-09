@@ -94,10 +94,25 @@ class MarkdownParser {
     }
 
     private _getAttackRange(text: string): object {
-        let match = text.match(/([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/)
-        if (!match) return;
-        match = [...match];
-        return {value: match[1], units: match[3], shape: match[4]}
+        let singleRangeMatch = text.match(/ ([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/);
+        let doubleRangeMatch = text.match(/ ([0-9]+)\/([0-9]+) (\w+)/);
+        const rangeObject = {
+            singleRange: {value: null, units: null, shape: null},
+            doubleRangeMatch: {short: null, long: null, units: null}
+        };
+
+        if (singleRangeMatch) {
+            rangeObject.singleRange.value = singleRangeMatch[1];
+            rangeObject.singleRange.units = singleRangeMatch[3];
+            rangeObject.singleRange.shape = singleRangeMatch[4];
+        }
+        if (doubleRangeMatch) {
+            rangeObject.doubleRangeMatch.short = doubleRangeMatch[1];
+            rangeObject.doubleRangeMatch.long = doubleRangeMatch[2];
+            rangeObject.doubleRangeMatch.units = doubleRangeMatch[3];
+        }
+
+        return rangeObject;
     }
 
     private _getAttackDamage(text: string): object {
