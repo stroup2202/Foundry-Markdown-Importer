@@ -40,7 +40,7 @@ class MarkdownParser {
     }
 
     private _getCreatureACAndSource(text: string): [string, string] {
-        const match = [...text.match(/ \*\*Armor Class\*\* ([0-9]+) \((.*?)\)/)];
+        const match = text.match(/ \*\*Armor Class\*\* ([0-9]+) ?(.*)?/);
         return [match[1], match[2]];
     }
 
@@ -50,12 +50,12 @@ class MarkdownParser {
     }
 
     private _getCreatureSpeed(text: string): object {
-        const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+ ft.), (.*)/);
+        const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+ ft.),? ?(.*)?/);
         return {value: speedMatch[1], special: speedMatch[2]};
     }
 
     private _getCreatureStats(text: string): object {
-        const stats = [...text.matchAll(/\|([0-9]+) \(\+[0-9]+\)/g)];
+        const stats = [...text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g)];
         const updatedStats = {Str: 0, Dex: 0, Con: 0, Int: 0, Wis: 0, Cha: 0};
         stats.forEach((stat, index) => {
             updatedStats[Object.keys(updatedStats)[index]] = (stat[1]);
@@ -65,8 +65,9 @@ class MarkdownParser {
 
     private _getSavingThrowMods(text: string): object {
         const savesObject = {};
-        const match = [...text.match(/\*\*Saving Throws\*\* (.*)/g)][0];
-        const savesMatch = [...match.matchAll(/ (\w{3}) \+([0-9]+)/g)];
+        const match = text.match(/\*\*Saving Throws\*\* (.*)/);
+        if (!match) return ;
+        const savesMatch = [...match[1].matchAll(/ (\w{3}) \+([0-9]+)/g)];
         savesMatch.forEach((save) => {
             savesObject[save[1]] = save[2];
         })
@@ -105,7 +106,7 @@ class MarkdownParser {
     }
 
     private _getChallenge(text: string): object {
-        const match = [...text.match(/\*\*Challenge\*\* ([0-9]+) \((.*)\)/)]
+        const match = text.match(/\*\*Challenge\*\* ([0-9]+\/[0-9]+) \((.*)\)/)
         return {CR: match[1], XP: match[2]};
     }
 
