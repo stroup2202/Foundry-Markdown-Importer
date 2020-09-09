@@ -14,8 +14,8 @@ class MarkdownParser {
     }
 
     private _getCreatureSizeAndAlignment(text: string): string[] {
-        const match = [...text.match(/\*(.*?), (.*?)\*/)];
-        return [match[1], match[2]];
+        const match = [...text.match(/\*(\w+) (\w+).*, (.*?)\*/)];
+        return [match[1], match[2], match[3]];
     }
 
     private _getCreatureACAndSource(text: string): [string, string] {
@@ -38,11 +38,11 @@ class MarkdownParser {
         return updatedSpeed;
     }
 
-    private _getCreatureStats(text: string): number[] {
+    private _getCreatureStats(text: string): object {
         const stats = [...text.matchAll(/\|([0-9]+) \(\+[0-9]+\)/g)];
-        const updatedStats = [];
-        stats.forEach((stat) => {
-            updatedStats.push(stat[1]);
+        const updatedStats = {Str: 0, Dex: 0, Con: 0, Int: 0, Wis: 0, Cha: 0};
+        stats.forEach((stat, index) => {
+            updatedStats[Object.keys(updatedStats)[index]] = (stat[1]);
         })
         return updatedStats;
     }
@@ -188,8 +188,27 @@ class MarkdownParser {
         return spellsObject;
     }
 
-    public parser(markdownText) {
-        const creatureName = this._getCreatureName(markdownText);
+    private _getAbilityModifier(abilityScore: number): number {
+        return Math.floor(abilityScore / 2 - 5);
+    }
+
+    private _getProficiency(statModifier: number, saveModifier: number): number {
+        return saveModifier - statModifier;
+    }
+
+    private _makeAbilitiesStructure(stats: object, saves: object): object {
+        const abilitiesObject = {}
+        for (const stat in stats) {
+            abilitiesObject[stat.toLowerCase()] = {
+                value: stats[stat],
+                proficient: saves[stat] ? 1 : 0,
+                prof: saves[stat] ? this._getProficiency(this._getAbilityModifier(stats[stat]), saves[stat]) : 0
+            };
+        }
+        return abilitiesObject
+    }
+
+    public async parser(markdownText) {
         const creatureSizeAndAlignment = this._getCreatureSizeAndAlignment(markdownText);
         const creatureArmor = this._getCreatureACAndSource(markdownText);
         const creatureHP = this._getCreatureHP(markdownText);
@@ -204,7 +223,27 @@ class MarkdownParser {
         const creatureAbilities = this._getAbilities(markdownText);
         const creatureLegendaryActions = this._getLegendaryActions(markdownText);
         const creatureSpells = this._getSpells(markdownText);
-        console.log(creatureArmor);
+        let actor = await Actor.create({
+            name: this._getCreatureName(markdownText),
+            type: "npc",
+            img: "",
+            sort: 12000,
+            data: {
+                abilities: this._makeAbilitiesStructure(creatureStats, creatureSaves),
+                details: {
+                    alignment: creatureSizeAndAlignment[2],
+                    type: creatureSizeAndAlignment[1],
+                    cr: creatureChallenge["CR"],
+                    xp: {value: creatureChallenge["XP"]}
+                },
+                traits: {
+                    size: creatureSizeAndAlignment[0]
+                }
+            },
+            token: {},
+            items: [],
+            flags: {}
+        });
     }
 }
 
