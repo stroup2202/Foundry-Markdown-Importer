@@ -9,6 +9,27 @@ class MarkdownParser {
         return MarkdownParser._instance;
     }
 
+    private _skillsToShortMap: { [key: string]: string } = {
+        'Acrobatics': 'acr',
+        'Animal Handling': 'ani',
+        'Arcana': 'arc',
+        'Athletics ': 'ath',
+        'Deception': 'dec',
+        'History': 'his',
+        'Insight': 'ins',
+        'Intimidation': 'itm',
+        'Investigation': 'inv',
+        'Medicine': 'med',
+        'Nature': 'nat',
+        'Perception': 'prc',
+        'Performance': 'prf',
+        'Persuasion': 'per',
+        'Religion ': 'rel',
+        'Sleight of Hand': 'slt',
+        'Stealth': 'ste',
+        'Survival': 'sur',
+    };
+
     private _getCreatureName(text: string): string {
         return [...text.match(/> ## (.+)/)][1];
     }
@@ -19,23 +40,18 @@ class MarkdownParser {
     }
 
     private _getCreatureACAndSource(text: string): [string, string] {
-        const match = [...text.match(/ \*\*Armor Class\*\* ([0-9]+) \((.*?)\)/)]
+        const match = [...text.match(/ \*\*Armor Class\*\* ([0-9]+) \((.*?)\)/)];
         return [match[1], match[2]];
     }
 
     private _getCreatureHP(text: string): [string, string] {
-        const match = [...text.match(/ \*\*Hit Points\*\* ([0-9]+) \((.*?)\)/)]
+        const match = [...text.match(/ \*\*Hit Points\*\* ([0-9]+) \((.*?)\)/)];
         return [match[1], match[2]];
     }
 
-    private _getCreatureSpeed(text: string): string[] {
-        const firstMatch = [...text.match(/ \*\*Speed\*\* (.*)/)][1];
-        const speed = [...firstMatch.matchAll(/(\w+ ?[0-9]+ \w+\.)/g)];
-        const updatedSpeed = []
-        speed.forEach((sp) => {
-            updatedSpeed.push(sp[1]);
-        })
-        return updatedSpeed;
+    private _getCreatureSpeed(text: string): object {
+        const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+ ft.), (.*)/);
+        return {value: speedMatch[1], special: speedMatch[2]};
     }
 
     private _getCreatureStats(text: string): object {
@@ -192,30 +208,39 @@ class MarkdownParser {
         return Math.floor(abilityScore / 2 - 5);
     }
 
-    private _getProficiency(statModifier: number, saveModifier: number): number {
-        return saveModifier - statModifier;
+    private _getProficiency(stats: object, saves: object): number {
+        return saves[Object.keys(saves)[0]] - this._getAbilityModifier(stats[Object.keys(saves)[0]]);
     }
 
-    private _makeAbilitiesStructure(stats: object, saves: object): object {
+    private _makeAbilitiesStructure(stats: object, saves: object, proficiency: number): object {
         const abilitiesObject = {}
         for (const stat in stats) {
+            if (!stats.hasOwnProperty(stat)) continue;
             abilitiesObject[stat.toLowerCase()] = {
                 value: stats[stat],
                 proficient: saves[stat] ? 1 : 0,
-                prof: saves[stat] ? this._getProficiency(this._getAbilityModifier(stats[stat]), saves[stat]) : 0
+                prof: proficiency
             };
         }
         return abilitiesObject
+    }
+
+    private _makeSkillsStructure(text: string, proficiency: number): object {
+        const creatureSkills = this._getSkills(text);
+        const skillsObject = {};
+        for (const skill in creatureSkills) {
+            if(!creatureSkills.hasOwnProperty(skill)) continue;
+            skillsObject[this._skillsToShortMap[skill]] = {value: Math.floor(creatureSkills[skill]/proficiency)};
+        }
+        return skillsObject
     }
 
     public async parser(markdownText) {
         const creatureSizeAndAlignment = this._getCreatureSizeAndAlignment(markdownText);
         const creatureArmor = this._getCreatureACAndSource(markdownText);
         const creatureHP = this._getCreatureHP(markdownText);
-        const creatureSpeed = this._getCreatureSpeed(markdownText);
         const creatureStats = this._getCreatureStats(markdownText);
         const creatureSaves = this._getSavingThrowMods(markdownText);
-        const creatureSkills = this._getSkills(markdownText);
         const creatureDamageModifiers = this._getDamageModifiers(markdownText);
         const creatureSenses = this._getSenses(markdownText);
         const creatureLanguages = this._getLanguages(markdownText);
@@ -223,13 +248,23 @@ class MarkdownParser {
         const creatureAbilities = this._getAbilities(markdownText);
         const creatureLegendaryActions = this._getLegendaryActions(markdownText);
         const creatureSpells = this._getSpells(markdownText);
+        const creatureProficiency = this._getProficiency(creatureStats, creatureSaves);
         let actor = await Actor.create({
             name: this._getCreatureName(markdownText),
             type: "npc",
             img: "",
             sort: 12000,
             data: {
-                abilities: this._makeAbilitiesStructure(creatureStats, creatureSaves),
+                abilities: this._makeAbilitiesStructure(creatureStats, creatureSaves, creatureProficiency),
+                attributes: {
+                    ac: {value: creatureArmor[0]},
+                    hp: {
+                        value: creatureHP[0],
+                        formula: creatureHP[1]
+                    },
+                    speed: this._getCreatureSpeed(markdownText),
+                    prof: creatureProficiency
+                },
                 details: {
                     alignment: creatureSizeAndAlignment[2],
                     type: creatureSizeAndAlignment[1],
@@ -238,7 +273,9 @@ class MarkdownParser {
                 },
                 traits: {
                     size: creatureSizeAndAlignment[0]
-                }
+                },
+                skills: this._makeSkillsStructure(markdownText, creatureProficiency)
+
             },
             token: {},
             items: [],
