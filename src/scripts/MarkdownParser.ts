@@ -45,11 +45,14 @@ class MarkdownParser {
      * @private
      */
     private _getCreatureName(text: string): string {
-        return text.match(/> ## (.+)/)[1];
+        const match = text.match(/> ## (.+)/);
+        if (!match) return ;
+        return match[1];
     }
 
     private _getCreatureSizeAndAlignment(text: string): object {
         const match = text.match(/\*(\w+) (\w+).*, (.*?)\*/);
+        if (!match) return ;
         return {
             size: match[1],
             race: match[2],
