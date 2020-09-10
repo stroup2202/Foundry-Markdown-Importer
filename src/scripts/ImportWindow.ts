@@ -1,4 +1,4 @@
-import MarkdownParser from "./MarkdownParser";
+import ActorCreator from "./ActorCreator";
 
 export default class ImportWindow extends Application {
 
@@ -18,7 +18,7 @@ export default class ImportWindow extends Application {
         super.activateListeners(html);
         html.find(".text-input").change(()=>{
             // @ts-ignore
-            MarkdownParser.parser($("[name='text']")[0].value);
+            ActorCreator.actorCreator($("[name='text']")[0].value);
         })
     }
 }
