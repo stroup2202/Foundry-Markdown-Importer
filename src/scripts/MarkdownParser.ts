@@ -30,6 +30,12 @@ class MarkdownParser {
         'Survival': 'sur',
     };
 
+    /**
+     * Returns a creature's name
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getCreatureName(text: string): string {
         return text.match(/> ## (.+)/)[1];
     }
@@ -43,6 +49,14 @@ class MarkdownParser {
         }
     }
 
+    /**
+     * Returns an object that contains the creatures AC and the source of that armor class
+     *
+     * @Fields: AC, source
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getCreatureACAndSource(text: string): object {
         const match = text.match(/ \*\*Armor Class\*\* ([0-9]+) ?(.*)?/);
         return {
@@ -51,6 +65,14 @@ class MarkdownParser {
         };
     }
 
+    /**
+     * Returns an object that contains the creatures HP and the formula to calculate it
+     *
+     * @Fields: HP, formula
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getCreatureHP(text: string): object {
         const match = text.match(/ \*\*Hit Points\*\* ([0-9]+) \((.*?)\)/);
         return {
@@ -59,11 +81,27 @@ class MarkdownParser {
         };
     }
 
+    /**
+     * Returns an object that contains a creature's speed
+     *
+     * @Fields: value, special
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getCreatureSpeed(text: string): object {
         const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+ ft.),? ?(.*)?/);
         return {value: speedMatch[1], special: speedMatch[2]};
     }
 
+    /**
+     * Returns a creature's stats
+     *
+     * @Fields: Str, Dex, Con, Int, Wis, Cha
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getCreatureStats(text: string): object {
         const stats = [...text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g)];
         const updatedStats = {Str: 0, Dex: 0, Con: 0, Int: 0, Wis: 0, Cha: 0};
