@@ -146,7 +146,7 @@ class MarkdownParser {
         const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( \+ ([0-9]+))?\) (\w+) damage/g)];
         const attackObject = [];
         match.forEach((attack) => {
-            attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4]]);
+            attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4], attack[3]]);
         })
         return attackObject
     }
@@ -161,11 +161,18 @@ class MarkdownParser {
         return saveObject;
     }
 
+    private _getAttackHit(text: string): number {
+        const match = text.match(/([+-] ?[0-9]+) to hit/)
+        if (match) return Number(match[1].replace(' ', ''));
+        return;
+    }
+
     private _getAttack(text: string): object {
         const attackObject = {};
         attackObject['damage'] = this._getAttackDamage(text);
         attackObject['range'] = this._getAttackRange(text);
         attackObject['save'] = this._getAttackSave(text);
+        attackObject['hit'] = this._getAttackHit(text);
         attackObject['target'] = 1;
         return attackObject;
     }
@@ -219,9 +226,13 @@ class MarkdownParser {
         return Math.floor(abilityScore / 2 - 5);
     }
 
-    //TODO: Make this function use the attack to hit modifier and damage modifier to determine prof
-    private _getProficiency(stats: object, saves: object): number {
-        return saves[Object.keys(saves)[0]] - this._getAbilityModifier(stats[Object.keys(saves)[0]]);
+    private _getProficiency(abilities: object): number {
+        for (const key in abilities) {
+            if (!abilities.hasOwnProperty(key)) continue;
+            if (abilities[key]?.data?.hit && abilities[key]?.data?.damage[0][2])
+                return abilities[key].data.hit - abilities[key].data.damage[0][2];
+        }
+        return 0;
     }
 
     private _makeAbilitiesStructure(stats: object, saves: object, proficiency: number): object {
@@ -260,7 +271,7 @@ class MarkdownParser {
         const creatureAbilities = this._getAbilities(markdownText);
         const creatureLegendaryActions = this._getLegendaryActions(markdownText);
         const creatureSpells = this._getSpells(markdownText);
-        const creatureProficiency = this._getProficiency(creatureStats, creatureSaves);
+        const creatureProficiency = this._getProficiency(creatureAbilities);
         let actor = await Actor.create({
             name: this._getCreatureName(markdownText),
             type: "npc",
