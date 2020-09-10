@@ -30,6 +30,14 @@ class MarkdownParser {
         'Survival': 'sur',
     };
 
+    private _sizesMap: { [key: string]: string } = {
+        "Gargantuan": "grg",
+        "Huge": "huge",
+        "Medium": "med",
+        "Small": "sm",
+        "Tiny": "tiny"
+    }
+
     /**
      * Returns a creature's name
      *
@@ -140,8 +148,9 @@ class MarkdownParser {
      */
     private _getSkills(text: string): object {
         const skillsObject = {};
-        const match = [...text.match(/\*\*Skills\*\* (.*)/g)][0];
-        const skills = [...match.matchAll(/(\w+) \+([0-9]+)/g)];
+        const match = text.match(/\*\*Skills\*\* (.*)/);
+        if (!match) return;
+        const skills = [...match[0].matchAll(/(\w+) \+([0-9]+)/g)];
         skills.forEach((skill) => {
             skillsObject[skill[1]] = skill[2];
         })
@@ -200,8 +209,8 @@ class MarkdownParser {
      * @private
      */
     private _getChallenge(text: string): object {
-        const match = text.match(/\*\*Challenge\*\* (([0-9]+\/[0-9]+)|([0-9]+)) \((.*)\)/)
-        return {CR: match[1], XP: match[4]};
+        const match = text.match(/\*\*Challenge\*\* (([0-9]+\/[0-9]+)|([0-9]+)) \((.*) XP\)/)
+        return {CR: eval(match[1]), XP: Number(match[4].replace(',', ''))};
     }
 
     /**
@@ -419,8 +428,8 @@ class MarkdownParser {
         for (const stat in stats) {
             if (!stats.hasOwnProperty(stat)) continue;
             abilitiesObject[stat.toLowerCase()] = {
-                value: stats[stat],
-                proficient: saves[stat] ? 1 : 0,
+                value: Number(stats[stat]),
+                proficient: saves ? saves[stat] ? 1 : 0 : 0,
                 prof: proficiency
             };
         }
@@ -466,9 +475,10 @@ class MarkdownParser {
             data: {
                 abilities: this._makeAbilitiesStructure(creatureStats, creatureSaves, creatureProficiency),
                 attributes: {
-                    ac: {value: creatureArmor['AC']},
+                    ac: {value: Number(creatureArmor['AC'])},
                     hp: {
-                        value: creatureHP['HP'],
+                        value: Number(creatureHP['HP']),
+                        max: Number(creatureHP['HP']),
                         formula: creatureHP['formula']
                     },
                     speed: this._getCreatureSpeed(markdownText),
@@ -481,7 +491,9 @@ class MarkdownParser {
                     xp: {value: creatureChallenge['XP']}
                 },
                 traits: {
-                    size: creatureSizeAndAlignment['size']
+                    size: this._sizesMap[creatureSizeAndAlignment['size']],
+                    languages: {custom: creatureLanguages},
+                    senses: creatureSenses['vision']
                 },
                 skills: this._makeSkillsStructure(markdownText, creatureProficiency)
 
