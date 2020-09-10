@@ -478,10 +478,10 @@ class MarkdownParser {
         for (const key in modifiers) {
             if (!modifiers.hasOwnProperty(key)) continue;
             structure[this._resistanceMap[key]] = {
-                custom: modifiers[key]
+                value: modifiers[key].split(', ')
             }
         }
-        return structure
+        return structure;
     }
 
     /**
