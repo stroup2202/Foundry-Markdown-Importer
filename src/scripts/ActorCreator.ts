@@ -86,6 +86,12 @@ class ActorCreator {
         return traits;
     }
 
+    /**
+     * Returns a foundry friendly structure for the details part
+     *
+     * @param markdownText - text to be parsed
+     * @private
+     */
     private _makeDetailsStructure(markdownText: string): object {
         const structure = {};
         const creatureSizeAndAlignment = MarkdownParser.getCreatureSizeAndAlignment(markdownText);
@@ -99,6 +105,12 @@ class ActorCreator {
         return structure;
     }
 
+    /**
+     * Returns a foundry friendly structure for the HP
+     *
+     * @param markdownText - text to be parsed
+     * @private
+     */
     private _makeHpStructure(markdownText: string): object {
         const structure = {};
         const creatureHP = MarkdownParser.getCreatureHP(markdownText);
@@ -110,6 +122,13 @@ class ActorCreator {
         return structure;
     }
 
+    /**
+     * Returns a foundry friendly structure for the attributes tab
+     *
+     * @param markdownText - text to be parsed
+     * @param creatureProficiency - creature's proficiency modifier
+     * @private
+     */
     private _makeAttributesStructure(markdownText: string, creatureProficiency: number): object {
         const structure = {};
         const creatureArmor = MarkdownParser.getCreatureACAndSource(markdownText);
