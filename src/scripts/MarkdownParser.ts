@@ -38,6 +38,13 @@ class MarkdownParser {
         "Tiny": "tiny"
     }
 
+    private _resistanceMap: { [key: string]: string } = {
+        "Damage Immunities": "di",
+        "Damage Vulnerabilities": "dv",
+        "Damage Resistances": "dr",
+        "Condition Immunities": "ci"
+    }
+
     /**
      * Returns a creature's name
      *
@@ -46,13 +53,13 @@ class MarkdownParser {
      */
     private _getCreatureName(text: string): string {
         const match = text.match(/> ## (.+)/);
-        if (!match) return ;
+        if (!match) return;
         return match[1];
     }
 
     private _getCreatureSizeAndAlignment(text: string): object {
         const match = text.match(/\*(\w+) (\w+).*, (.*?)\*/);
-        if (!match) return ;
+        if (!match) return;
         return {
             size: match[1],
             race: match[2],
@@ -170,8 +177,12 @@ class MarkdownParser {
      */
     private _getDamageModifiers(text: string): object {
         const modifiersObject = {}
-        const match = [...text.matchAll(/\*\*Damage (\w+)\*\* (.*)/g)];
-        match.forEach((modifier) => {
+        const damageMatch = [...text.matchAll(/\*\*(Damage \w+)\*\* (.*)/g)];
+        const conditionMatch = [...text.matchAll(/\*\*(Condition Immunities)\*\* (.*)/g)]
+        damageMatch.forEach((modifier) => {
+            modifiersObject[modifier[1]] = modifier[2];
+        })
+        conditionMatch.forEach((modifier) => {
             modifiersObject[modifier[1]] = modifier[2];
         })
         return modifiersObject;
@@ -456,14 +467,49 @@ class MarkdownParser {
         return skillsObject
     }
 
+    /**
+     * Returns a foundry friendly structure for resistances
+     *
+     * @param modifiers - an object with all the damage modifiers of the creature
+     * @private
+     */
+    private _makeResistancesStructure(modifiers: object): object {
+        const structure = {};
+        for (const key in modifiers) {
+            if (!modifiers.hasOwnProperty(key)) continue;
+            structure[this._resistanceMap[key]] = {
+                custom: modifiers[key]
+            }
+        }
+        return structure
+    }
+
+    /**
+     * Returns a foundry friendly structure for the traits part of the actor
+     *
+     * @param markdownText - text to be parsed
+     * @private
+     */
+    private _makeTraitsStructure(markdownText): object {
+        const creatureSizeAndAlignment = this._getCreatureSizeAndAlignment(markdownText);
+        const creatureLanguages = this._getLanguages(markdownText).toLocaleLowerCase();
+        const creatureSenses = this._getSenses(markdownText);
+        const creatureDamageModifiers = this._getDamageModifiers(markdownText);
+
+        const traits = this._makeResistancesStructure(creatureDamageModifiers);
+        traits['size'] = this._sizesMap[creatureSizeAndAlignment['size']];
+        traits['languages'] = {value: creatureLanguages.split(', ')};
+        traits['senses'] = creatureSenses['vision'];
+
+        return traits;
+    }
+
     public async parser(markdownText) {
         const creatureSizeAndAlignment = this._getCreatureSizeAndAlignment(markdownText);
         const creatureArmor = this._getCreatureACAndSource(markdownText);
         const creatureHP = this._getCreatureHP(markdownText);
         const creatureStats = this._getCreatureStats(markdownText);
         const creatureSaves = this._getSavingThrowMods(markdownText);
-        const creatureDamageModifiers = this._getDamageModifiers(markdownText);
-        const creatureSenses = this._getSenses(markdownText);
         const creatureLanguages = this._getLanguages(markdownText);
         const creatureChallenge = this._getChallenge(markdownText);
         const creatureAbilities = this._getAbilities(markdownText);
@@ -493,11 +539,7 @@ class MarkdownParser {
                     cr: creatureChallenge['CR'],
                     xp: {value: creatureChallenge['XP']}
                 },
-                traits: {
-                    size: this._sizesMap[creatureSizeAndAlignment['size']],
-                    languages: {custom: creatureLanguages},
-                    senses: creatureSenses['vision']
-                },
+                traits: this._makeTraitsStructure(markdownText),
                 skills: this._makeSkillsStructure(markdownText, creatureProficiency)
 
             },
