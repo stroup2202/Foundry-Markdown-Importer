@@ -61,7 +61,6 @@ class MarkdownParser {
      * Returns a creature's name
      *
      * @param text - markdown text
-     * @private
      */
     public getCreatureName(text: string): string {
         const match = text.match(/> ## (.+)/);
@@ -85,7 +84,6 @@ class MarkdownParser {
      * @Fields: AC, source
      *
      * @param text - markdown text
-     * @private
      */
     public getCreatureACAndSource(text: string): object {
         const match = text.match(/ \*\*Armor Class\*\* ([0-9]+) ?(.*)?/);
@@ -101,7 +99,6 @@ class MarkdownParser {
      * @Fields: HP, formula
      *
      * @param text - markdown text
-     * @private
      */
     public getCreatureHP(text: string): object {
         const match = text.match(/ \*\*Hit Points\*\* ([0-9]+) \((.*?)\)/);
@@ -117,7 +114,6 @@ class MarkdownParser {
      * @Fields: value, special
      *
      * @param text - markdown text
-     * @private
      */
     public getCreatureSpeed(text: string): object {
         const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+ ft.),? ?(.*)?/);
@@ -130,7 +126,6 @@ class MarkdownParser {
      * @Fields: Str, Dex, Con, Int, Wis, Cha
      *
      * @param text - markdown text
-     * @private
      */
     public getCreatureStats(text: string): object {
         const stats = [...text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g)];
@@ -147,7 +142,6 @@ class MarkdownParser {
      * @ExampleFields: Str, Dex
      *
      * @param text - markdown text
-     * @private
      */
     public getSavingThrowMods(text: string): object {
         const savesObject = {};
@@ -166,7 +160,6 @@ class MarkdownParser {
      * @ExampleFields: Perception, Insist
      *
      * @param text - markdown text
-     * @private
      */
     public getSkills(text: string): object {
         const skillsObject = {};
@@ -185,7 +178,6 @@ class MarkdownParser {
      * @ExampleFields: Immunity, Vulnerability
      *
      * @param text - markdown text
-     * @private
      */
     public getDamageModifiers(text: string): object {
         const modifiersObject = {}
@@ -206,7 +198,6 @@ class MarkdownParser {
      * @ExampleFields: vision, passive Perception
      *
      * @param text - markdown text
-     * @private
      */
     public getSenses(text: string): object {
         const sensesObject = {};
@@ -220,7 +211,6 @@ class MarkdownParser {
      * Returns a creature's languages as a string
      *
      * @param text - markdown text
-     * @private
      */
     public getLanguages(text: string): string {
         return [...text.match(/\*\*Languages\*\* (.*)/)][1];
@@ -232,7 +222,6 @@ class MarkdownParser {
      * @Fields: CR, XP
      *
      * @param text - markdown text
-     * @private
      */
     public getChallenge(text: string): object {
         const match = text.match(/\*\*Challenge\*\* (([0-9]+\/[0-9]+)|([0-9]+)) \((.*) XP\)/)
@@ -248,7 +237,6 @@ class MarkdownParser {
      * @Fields: singleRange -> value, units, shape ; doubleRange -> short, long, units
      *
      * @param text - markdown text
-     * @private
      */
     public getAttackRange(text: string): object {
         let singleRangeMatch = text.match(/ ([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/);
@@ -276,7 +264,6 @@ class MarkdownParser {
      * Returns an attack's damage
      *
      * @param text - markdown text
-     * @private
      */
     public getAttackDamage(text: string): object {
         const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( \+ ([0-9]+))?\) (\w+) damage/g)];
@@ -293,7 +280,6 @@ class MarkdownParser {
      * @Fields: DC, ability
      *
      * @param text - markdown text
-     * @private
      */
     public getAttackSave(text: string): object {
         let match = text.match(/DC ([0-9]+) (\w+)/);
@@ -308,7 +294,6 @@ class MarkdownParser {
      * Returns an attacks to hit modifier
      *
      * @param text - markdown text
-     * @private
      */
     public getAttackHit(text: string): number {
         const match = text.match(/([+-] ?[0-9]+) to hit/)
@@ -322,7 +307,6 @@ class MarkdownParser {
      * @Fields: damage, range, save, hit, target
      *
      * @param text - markdown text
-     * @private
      */
     public getAttack(text: string): object {
         const attackObject = {};
@@ -340,7 +324,6 @@ class MarkdownParser {
      * @Fields: level -> spellcaster level, modifier -> spellcasting ability modifier
      *
      * @param text - markdown text
-     * @private
      */
     public getSpellcastingStats(text: string): object {
         const spellcastingLevel = [...text.match(/([0-9]+)\w{1,2}-level spellcaster/)];
@@ -355,7 +338,6 @@ class MarkdownParser {
      * @Note: `data` field may vary depending on the type of ability that is parsed
      *
      * @param text - markdown text
-     * @private
      */
     public getAbilities(text: string): object {
         const match = [...text.matchAll(/\*\*\*(.*?)\*\*\* (.*)/g)];
@@ -379,7 +361,6 @@ class MarkdownParser {
      * @Note2 cost field is by default 1, will be modified if the name of the action has a (Costs x Actions) structure
      *
      * @param text
-     * @private
      */
     public getLegendaryActions(text: string): object {
         const match = [...text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g)];
@@ -403,7 +384,6 @@ class MarkdownParser {
      * @Note: The function only returns the spell name because 5e stat block have only the names of the spells i guess...
      *
      * @param text - markdown text
-     * @private
      */
     public getSpells(text: string): object {
         const matchedSpells = [...text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g)];
@@ -420,7 +400,6 @@ class MarkdownParser {
      * The proficiency is calculated using an attack where the to hit score has the prof added adn the + to the damage roll doesn't
      *
      * @param abilities - an object of all the creatures abilities
-     * @private
      */
     public getProficiency(abilities: object): number {
         for (const key in abilities) {
@@ -435,7 +414,6 @@ class MarkdownParser {
      * Returns the ability modifier given the ability score
      *
      * @param abilityScore - ability score, example 20 -> returns +5
-     * @private
      */
     public getAbilityModifier(abilityScore: number): number {
         return Math.floor(abilityScore / 2 - 5);
