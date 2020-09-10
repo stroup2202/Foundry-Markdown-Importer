@@ -487,7 +487,7 @@ class MarkdownParser {
                 details: {
                     alignment: creatureSizeAndAlignment['alignment'],
                     type: creatureSizeAndAlignment['race'],
-                    cr: creatureChallenge['CR'],
+                    cr: creatureChallenge['CR'] < 1 ? 1 : creatureChallenge['CR'],
                     xp: {value: creatureChallenge['XP']}
                 },
                 traits: {
