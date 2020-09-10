@@ -111,6 +111,14 @@ class MarkdownParser {
         return updatedStats;
     }
 
+    /**
+     * Returns a creature's saving throws as an object
+     *
+     * @ExampleFields: Str, Dex
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getSavingThrowMods(text: string): object {
         const savesObject = {};
         const match = text.match(/\*\*Saving Throws\*\* (.*)/);
@@ -122,6 +130,14 @@ class MarkdownParser {
         return savesObject;
     }
 
+    /**
+     * Returns a creature's skills
+     *
+     * @ExampleFields: Perception, Insist
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getSkills(text: string): object {
         const skillsObject = {};
         const match = [...text.match(/\*\*Skills\*\* (.*)/g)][0];
@@ -132,6 +148,14 @@ class MarkdownParser {
         return skillsObject;
     }
 
+    /**
+     * Returns a creature's damage modifiers (Vulnerability, Resistance, Immunity)
+     *
+     * @ExampleFields: Immunity, Vulnerability
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getDamageModifiers(text: string): object {
         const modifiersObject = {}
         const match = [...text.matchAll(/\*\*Damage (\w+)\*\* (.*)/g)];
@@ -141,6 +165,14 @@ class MarkdownParser {
         return modifiersObject;
     }
 
+    /**
+     * Returns a creature's senses
+     *
+     * @ExampleFields: vision, passive Perception
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getSenses(text: string): object {
         const sensesObject = {};
         const match = [...text.match(/\*\*Senses\*\* ?(.*)?,? (passive Perception) ([0-9]+)/)];
@@ -149,21 +181,46 @@ class MarkdownParser {
         return sensesObject;
     }
 
+    /**
+     * Returns a creature's languages as a string
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getLanguages(text: string): string {
         return [...text.match(/\*\*Languages\*\* (.*)/)][1];
     }
 
+    /**
+     * Returns a creature's challange rating
+     *
+     * @Fields: CR, XP
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getChallenge(text: string): object {
         const match = text.match(/\*\*Challenge\*\* (([0-9]+\/[0-9]+)|([0-9]+)) \((.*)\)/)
         return {CR: match[1], XP: match[4]};
     }
 
+    /**
+     * Returns an attack's range.
+     *
+     * The object contains 2 fields, one for the ranges represented by a single number and one for ranges
+     * represented with in the short/long style.
+     *
+     * @Fields: singleRange -> value, units, shape ; doubleRange -> short, long, units
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getAttackRange(text: string): object {
         let singleRangeMatch = text.match(/ ([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/);
         let doubleRangeMatch = text.match(/ ([0-9]+)\/([0-9]+) (\w+)/);
         const rangeObject = {
             singleRange: {value: null, units: null, shape: null},
-            doubleRangeMatch: {short: null, long: null, units: null}
+            doubleRange: {short: null, long: null, units: null}
         };
 
         if (singleRangeMatch) {
@@ -172,14 +229,20 @@ class MarkdownParser {
             rangeObject.singleRange.shape = singleRangeMatch[4];
         }
         if (doubleRangeMatch) {
-            rangeObject.doubleRangeMatch.short = doubleRangeMatch[1];
-            rangeObject.doubleRangeMatch.long = doubleRangeMatch[2];
-            rangeObject.doubleRangeMatch.units = doubleRangeMatch[3];
+            rangeObject.doubleRange.short = doubleRangeMatch[1];
+            rangeObject.doubleRange.long = doubleRangeMatch[2];
+            rangeObject.doubleRange.units = doubleRangeMatch[3];
         }
 
         return rangeObject;
     }
 
+    /**
+     * Returns an attack's damage
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getAttackDamage(text: string): object {
         const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( \+ ([0-9]+))?\) (\w+) damage/g)];
         const attackObject = [];
@@ -189,22 +252,43 @@ class MarkdownParser {
         return attackObject
     }
 
+    /**
+     * Returns an attack's save DC and ability
+     *
+     * @Fields: DC, ability
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getAttackSave(text: string): object {
         let match = text.match(/DC ([0-9]+) (\w+)/);
         if (!match) return;
-        match = [...match];
         const saveObject = {};
         saveObject["DC"] = match[1];
         saveObject["ability"] = match[2];
         return saveObject;
     }
 
+    /**
+     * Returns an attacks to hit modifier
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getAttackHit(text: string): number {
         const match = text.match(/([+-] ?[0-9]+) to hit/)
         if (match) return Number(match[1].replace(' ', ''));
         return;
     }
 
+    /**
+     * Returns an attack
+     *
+     * @Fields: damage, range, save, hit, target
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getAttack(text: string): object {
         const attackObject = {};
         attackObject['damage'] = this._getAttackDamage(text);
@@ -215,12 +299,29 @@ class MarkdownParser {
         return attackObject;
     }
 
+    /**
+     * Returns a creature's spellcasting details
+     *
+     * @Fields: level -> spellcaster level, modifier -> spellcasting ability modifier
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getSpellcastingStats(text: string): object {
         const spellcastingLevel = [...text.match(/([0-9]+)\w{1,2}-level spellcaster/)];
         const spellcastingModifier = [...text.match(/spellcasting ability is (\w+)/)];
         return {level: spellcastingLevel[1], modifier: spellcastingModifier[1]};
     }
 
+    /**
+     * Returns a creature's abilities
+     *
+     * @Fields: description, data
+     * @Note: `data` field may vary depending on the type of ability that is parsed
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getAbilities(text: string): object {
         const match = [...text.matchAll(/\*\*\*(.*?)\*\*\* (.*)/g)];
         const abilitiesObject = {};
@@ -235,6 +336,16 @@ class MarkdownParser {
         return abilitiesObject;
     }
 
+    /**
+     * Returns a creature's legendary actions
+     *
+     * @Field description, data, cost
+     * @Note1 data field may vary depending on the type of action parsed
+     * @Note2 cost field is by default 1, will be modified if the name of the action has a (Costs x Actions) structure
+     *
+     * @param text
+     * @private
+     */
     private _getLegendaryActions(text: string): object {
         const match = [...text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g)];
         const actionObject = {};
@@ -250,6 +361,15 @@ class MarkdownParser {
         return actionObject;
     }
 
+    /**
+     * Returns a creature's spell list
+     *
+     * @ExampleFields: Cantrips, 1, 2, 3, 4
+     * @Note: The function only returns the spell name because 5e stat block have only the names of the spells i guess...
+     *
+     * @param text - markdown text
+     * @private
+     */
     private _getSpells(text: string): object {
         const matchedSpells = [...text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g)];
         const spellsObject = {};
@@ -260,10 +380,23 @@ class MarkdownParser {
         return spellsObject;
     }
 
+    /**
+     * Returns the ability modifier given the ability score
+     *
+     * @param abilityScore - ability score, example 20 -> returns +5
+     * @private
+     */
     private _getAbilityModifier(abilityScore: number): number {
         return Math.floor(abilityScore / 2 - 5);
     }
 
+    /**
+     * Returns a creature's proficiency
+     * The proficiency is calculated using an attack where the to hit score has the prof added adn the + to the damage roll doesn't
+     *
+     * @param abilities - an object of all the creatures abilities
+     * @private
+     */
     private _getProficiency(abilities: object): number {
         for (const key in abilities) {
             if (!abilities.hasOwnProperty(key)) continue;
@@ -273,6 +406,14 @@ class MarkdownParser {
         return 0;
     }
 
+    /**
+     * Returns the foundry friendly structure for the ability scores
+     *
+     * @param stats - ability scores
+     * @param saves - saves (used to decide if the creatures is proficient in a stat or not
+     * @param proficiency - proficiency score
+     * @private
+     */
     private _makeAbilitiesStructure(stats: object, saves: object, proficiency: number): object {
         const abilitiesObject = {}
         for (const stat in stats) {
@@ -286,6 +427,13 @@ class MarkdownParser {
         return abilitiesObject
     }
 
+    /**
+     * Returns the foundry friendly structure for skills
+     *
+     * @param text - markdown text
+     * @param proficiency - proficiency score
+     * @private
+     */
     private _makeSkillsStructure(text: string, proficiency: number): object {
         const creatureSkills = this._getSkills(text);
         const skillsObject = {};
