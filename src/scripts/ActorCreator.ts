@@ -182,13 +182,26 @@ class ActorCreator {
      * @param actorStats - the stats of the actor
      * @private
      */
-    private _getAttackAbility (ability: any, actorStats: object): string {
-        if(!ability?.data?.damage[0]) return ;
-        for(const key in actorStats){
-            if(!actorStats.hasOwnProperty(key)) continue;
+    private _getAttackAbility(ability: any, actorStats: object): string {
+        if (!ability?.data?.damage[0]) return;
+        for (const key in actorStats) {
+            if (!actorStats.hasOwnProperty(key)) continue;
             if (Number(ability?.data?.damage[0][2]) === MarkdownParser.getAbilityModifier(actorStats[key])) return key.toLowerCase();
         }
         return;
+    }
+
+    private _getActivation(ability: any): object {
+        const activationObject = {type: '', cost: 0, condition: ''};
+        if (ability.cost) {
+            activationObject.type = 'legendary';
+            activationObject.cost = ability.cost;
+        }
+        else if (ability.data.damage.length !== 0 || ability.data.save) {
+            activationObject.type = 'action';
+            activationObject.cost = 1;
+        }
+        return activationObject;
     }
 
     /**
@@ -200,12 +213,12 @@ class ActorCreator {
      * @param actorStats - stats of the actor
      */
     public async itemCreator(actor: any, itemName: string, itemData: any, actorStats: object): Promise<void> {
-        itemData['data']['range'] = this._makeRangeTargetStructure(itemData['data']['range']);
         let thisItem = {
             name: itemName,
-            type: "feat",
+            type: itemData?.data?.damage?.[0]?.[2] ? 'weapon' : 'feat',
             data: {
                 description: {value: itemData['description']},
+                activation: this._getActivation(itemData),
                 ability: this._getAttackAbility(itemData, actorStats),
                 actionType: itemData?.data?.damage?.[0]?.[2] ? 'mwak' : null,
                 damage: {
@@ -215,7 +228,7 @@ class ActorCreator {
                 equipped: true,
             },
         }
-        Object.assign(thisItem.data, itemData.data.range);
+        Object.assign(thisItem.data, this._makeRangeTargetStructure(itemData['data']['range']));
         await actor.createEmbeddedEntity("OwnedItem", thisItem);
 
     }
