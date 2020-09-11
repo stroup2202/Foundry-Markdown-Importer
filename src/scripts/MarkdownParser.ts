@@ -54,7 +54,7 @@ class MarkdownParser {
         "Charisma": 'cha'
     }
 
-    public shortenAbilities (ability:string):string {
+    public shortenAbilities(ability: string): string {
         return this._abilitiesMap[ability];
     }
 
@@ -379,6 +379,7 @@ class MarkdownParser {
      */
     public getLegendaryActions(text: string): object {
         const match = [...text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g)];
+        const legendaryActionDescription = text.match(/> (.* can take [0-9]+ legendary actions, .*)/);
         const actionObject = {};
         match.forEach((action) => {
             actionObject[action[1]] = {
@@ -389,6 +390,10 @@ class MarkdownParser {
             actionObject[action[1]].data = this.getAttack(action[4]);
             actionObject[action[1]].cost = action[3] ? action[3] : 1;
         })
+        actionObject['Legendary Actions'] = {
+            description: legendaryActionDescription?.[1],
+            data: this.getAttack(legendaryActionDescription?.[1])
+        }
         return actionObject;
     }
 

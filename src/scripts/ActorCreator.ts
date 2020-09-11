@@ -148,6 +148,7 @@ class ActorCreator {
      * @private
      */
     private _cleanAbilityDamage(abilityData) {
+        if (!abilityData) return abilityData;
         abilityData.forEach((ability) => {
             ability.pop();
         })
@@ -162,7 +163,7 @@ class ActorCreator {
      */
     private _makeRangeTargetStructure(abilityRange): object {
         const structure = {};
-        if (abilityRange.singleRange.type) {
+        if (abilityRange?.singleRange?.type) {
             structure['target'] = abilityRange.singleRange;
             structure['range'] = {
                 value: null,
@@ -193,11 +194,11 @@ class ActorCreator {
 
     private _getActivation(ability: any): object {
         const activationObject = {type: '', cost: 0, condition: ''};
-        if (ability.cost) {
+        if (ability?.cost) {
             activationObject.type = 'legendary';
             activationObject.cost = ability.cost;
         }
-        else if (ability.data.damage.length !== 0 || ability.data.save) {
+        else if (ability?.data?.damage?.length !== 0 || ability?.data?.save) {
             activationObject.type = 'action';
             activationObject.cost = 1;
         }
@@ -222,13 +223,13 @@ class ActorCreator {
                 ability: this._getAttackAbility(itemData, actorStats),
                 actionType: itemData?.data?.damage?.[0]?.[2] ? 'mwak' : null,
                 damage: {
-                    parts: this._cleanAbilityDamage(itemData['data']['damage'])
+                    parts: this._cleanAbilityDamage(itemData?.['data']?.['damage'])
                 },
-                save: itemData['data']['save'],
+                save: itemData?.['data']?.['save'],
                 equipped: true,
             },
         }
-        Object.assign(thisItem.data, this._makeRangeTargetStructure(itemData['data']['range']));
+        Object.assign(thisItem.data, this._makeRangeTargetStructure(itemData?.['data']?.['range']));
         await actor.createEmbeddedEntity("OwnedItem", thisItem);
 
     }
@@ -273,6 +274,7 @@ class ActorCreator {
             flags: {}
         });
         if (creatureAbilities) this.abilitiesAdder(actor, creatureAbilities, creatureStats);
+        if (creatureLegendaryActions) this.abilitiesAdder(actor, creatureLegendaryActions, creatureStats);
     }
 
 }
