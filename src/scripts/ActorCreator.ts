@@ -60,7 +60,7 @@ class ActorCreator {
         for (const key in modifiers) {
             if (!modifiers.hasOwnProperty(key)) continue;
             structure[MarkdownParser.convertResistance(key)] = {
-                value: modifiers[key].split(', ')
+                custom: modifiers[key]
             }
         }
         return structure;
@@ -78,9 +78,11 @@ class ActorCreator {
         const creatureSenses = MarkdownParser.getSenses(markdownText);
         const creatureDamageModifiers = MarkdownParser.getDamageModifiers(markdownText);
 
-        const traits = this._makeResistancesStructure(creatureDamageModifiers);
+        const traits = this._makeResistancesStructure(creatureDamageModifiers)  ;
         traits['size'] = MarkdownParser.convertSizes(creatureSizeAndAlignment['size']);
-        traits['languages'] = {value: creatureLanguages.split(', ')}; //TODO make a way to separate known languages from custom ones
+        traits['languages'] = {
+            custom: creatureLanguages
+        };
         traits['senses'] = creatureSenses['vision'];
 
         return traits;
@@ -163,6 +165,7 @@ class ActorCreator {
      */
     private _makeRangeTargetStructure(abilityRange): object {
         const structure = {};
+        if (!abilityRange) return structure;
         if (abilityRange?.singleRange?.type) {
             structure['target'] = abilityRange.singleRange;
             structure['range'] = {
@@ -184,7 +187,7 @@ class ActorCreator {
      * @private
      */
     private _getAttackAbility(ability: any, actorStats: object): string {
-        if (!ability?.data?.damage[0]) return;
+        if (!ability?.data?.damage?.[0]) return;
         for (const key in actorStats) {
             if (!actorStats.hasOwnProperty(key)) continue;
             if (Number(ability?.data?.damage[0][2]) === MarkdownParser.getAbilityModifier(actorStats[key])) return key.toLowerCase();
@@ -197,8 +200,7 @@ class ActorCreator {
         if (ability?.cost) {
             activationObject.type = 'legendary';
             activationObject.cost = ability.cost;
-        }
-        else if (ability?.data?.damage?.length !== 0 || ability?.data?.save) {
+        } else if (ability?.data?.damage?.length !== 0 || ability?.data?.save) {
             activationObject.type = 'action';
             activationObject.cost = 1;
         }

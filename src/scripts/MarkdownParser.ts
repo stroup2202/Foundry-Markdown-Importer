@@ -390,6 +390,7 @@ class MarkdownParser {
             actionObject[action[1]].data = this.getAttack(action[4]);
             actionObject[action[1]].cost = action[3] ? action[3] : 1;
         })
+        if (!legendaryActionDescription) return actionObject;
         actionObject['Legendary Actions'] = {
             description: legendaryActionDescription?.[1],
             data: this.getAttack(legendaryActionDescription?.[1])
