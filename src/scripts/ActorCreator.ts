@@ -180,6 +180,7 @@ class ActorCreator {
             data: {
                 description: {value: abilityData['description']},
                 ability: this._getAttackAbility(abilityData, actorStats),
+                actionType: abilityData?.data?.damage?.[0]?.[2] ? 'mwak' : null,
                 damage: {
                     parts: this._cleanAbilityDamage(abilityData['data']['damage'])
                 },
