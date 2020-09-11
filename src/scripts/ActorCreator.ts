@@ -138,8 +138,67 @@ class ActorCreator {
         structure['speed'] = MarkdownParser.getCreatureSpeed(markdownText);
         structure['prof'] = creatureProficiency;
 
-        return structure
+        return structure;
     }
+
+    private _cleanAbilityDamage(abilityData) {
+        abilityData.forEach((ability) => {
+            ability.pop();
+        })
+        return abilityData;
+    }
+
+    private _makeRangeTargetStructure(abilityRange): object {
+        const structure = {};
+        if (abilityRange.singleRange.type) {
+            structure['target'] = abilityRange.singleRange;
+            structure['range'] = {
+                value: null,
+                long: null,
+                units: 'self'
+            }
+        } else {
+            structure['range'] = abilityRange.doubleRange.short ? abilityRange.doubleRange : abilityRange.singleRange
+        }
+        return structure;
+    }
+
+    private _getAttackAbility (ability: any, actorStats: object): string {
+        if(!ability?.data?.damage[0]) return ;
+        for(const key in actorStats){
+            if(!actorStats.hasOwnProperty(key)) continue;
+            if (Number(ability?.data?.damage[0][2]) === MarkdownParser.getAbilityModifier(actorStats[key])) return key.toLowerCase();
+        }
+        return;
+    }
+
+    public async itemCreator(actor: any, abilityName: string, abilityData: any, actorStats: object): Promise<void> {
+        abilityData['data']['range'] = this._makeRangeTargetStructure(abilityData['data']['range']);
+        let thisItem = {
+            name: abilityName,
+            type: "feat",
+            data: {
+                description: {value: abilityData['description']},
+                ability: this._getAttackAbility(abilityData, actorStats),
+                damage: {
+                    parts: this._cleanAbilityDamage(abilityData['data']['damage'])
+                },
+                save: abilityData['data']['save'],
+                equipped: true,
+            },
+        }
+        Object.assign(thisItem.data, abilityData.data.range);
+        await actor.createEmbeddedEntity("OwnedItem", thisItem);
+
+    }
+
+    public abilitiesAdder(actor: any, abilities: object, actorStats: object): void {
+        for (const key in abilities) {
+            if (!abilities.hasOwnProperty(key)) continue;
+            this.itemCreator(actor, key, abilities[key], actorStats);
+        }
+    }
+
 
     public async actorCreator(markdownText: string) {
         const creatureStats = MarkdownParser.getCreatureStats(markdownText);
@@ -166,6 +225,7 @@ class ActorCreator {
             items: [],
             flags: {}
         });
+        if (creatureAbilities) this.abilitiesAdder(actor, creatureAbilities, creatureStats);
     }
 
 }

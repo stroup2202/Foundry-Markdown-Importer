@@ -45,6 +45,19 @@ class MarkdownParser {
         "Condition Immunities": "ci"
     }
 
+    private _abilitiesMap: { [key: string]: string } = {
+        'Strength': 'str',
+        'Dexterity': 'dex',
+        'Constitution': 'con',
+        'Intelligence': 'int',
+        "Wisdom": 'wis',
+        "Charisma": 'cha'
+    }
+
+    public shortenAbilities (ability:string):string {
+        return this._abilitiesMap[ability];
+    }
+
     public shortenSkills(skill: string): string {
         return this._skillsToShortMap[skill];
     }
@@ -242,19 +255,21 @@ class MarkdownParser {
         let singleRangeMatch = text.match(/ ([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/);
         let doubleRangeMatch = text.match(/ ([0-9]+)\/([0-9]+) (\w+)/);
         const rangeObject = {
-            singleRange: {value: null, units: null, shape: null},
-            doubleRange: {short: null, long: null, units: null}
+            singleRange: {value: null, units: null, type: null},
+            doubleRange: {value: null, long: null, units: null}
         };
 
+
         if (singleRangeMatch) {
+            if (singleRangeMatch[4]) singleRangeMatch[4] = singleRangeMatch[4].replace(' ', '');
             rangeObject.singleRange.value = singleRangeMatch[1];
-            rangeObject.singleRange.units = singleRangeMatch[3];
-            rangeObject.singleRange.shape = singleRangeMatch[4];
+            rangeObject.singleRange.units = 'ft';
+            rangeObject.singleRange.type = singleRangeMatch[4];
         }
         if (doubleRangeMatch) {
-            rangeObject.doubleRange.short = doubleRangeMatch[1];
+            rangeObject.doubleRange.value = doubleRangeMatch[1];
             rangeObject.doubleRange.long = doubleRangeMatch[2];
-            rangeObject.doubleRange.units = doubleRangeMatch[3];
+            rangeObject.doubleRange.units = 'ft';
         }
 
         return rangeObject;
@@ -285,8 +300,8 @@ class MarkdownParser {
         let match = text.match(/DC ([0-9]+) (\w+)/);
         if (!match) return;
         const saveObject = {};
-        saveObject["DC"] = match[1];
-        saveObject["ability"] = match[2];
+        saveObject["dc"] = match[1];
+        saveObject["ability"] = this.shortenAbilities(match[2]);
         return saveObject;
     }
 
