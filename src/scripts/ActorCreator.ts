@@ -273,17 +273,36 @@ class ActorCreator {
         return words.join(" ");
     }
 
+    /**
+     * Returns the compendium structure with ids
+     *
+     * @private
+     */
     private async _getCompendiums() {
         const pack = game.packs.get("dnd5e.spells");
         await pack.getIndex();
         return pack;
     }
 
+    /**
+     * Returns an entity from the compendium
+     *
+     * @param compendium - source compendium
+     * @param spellName - name of the spell
+     * @private
+     */
     private async _getEntityFromCompendium(compendium, spellName) {
         let entry = compendium.index.find(e => e.name === spellName);
         return await compendium.getEntry(entry._id);
     }
 
+    /**
+     * Converts the array of names to the array of spell entities for the createEmbeddedEntity
+     *
+     * @param spells - array of spells
+     * @param compendium - a compendium to get the entity structure from
+     * @private
+     */
     private async _prepareSpellsArray(spells: Array<string>, compendium): Promise<Array<any>> {
         for (let spell of spells) {
             let index = spells.indexOf(spell);
@@ -294,6 +313,12 @@ class ActorCreator {
         return spells;
     }
 
+    /**
+     * Returns an array of all the spells entity
+     *
+     * @param spells - an object that contains all the spells
+     * @private
+     */
     private async _prepareSpellsObject(spells: object): Promise<object> {
         const compendium = await this._getCompendiums();
         let spellsArray = [];
@@ -305,6 +330,12 @@ class ActorCreator {
         return spellsArray;
     }
 
+    /**
+     * Adds all the spells to the actor object
+     *
+     * @param actor - owner of the spells
+     * @param spells - an array of spell names
+     */
     public async spellsAdder(actor: any, spells: object): Promise<void> {
         if (!spells) return;
         const spellList = await this._prepareSpellsObject(spells);
@@ -337,6 +368,7 @@ class ActorCreator {
             items: [],
             flags: {}
         });
+
         if (creatureAbilities) this.abilitiesAdder(actor, creatureAbilities, creatureStats);
         if (creatureLegendaryActions) this.abilitiesAdder(actor, creatureLegendaryActions, creatureStats);
         if (creatureSpells) await this.spellsAdder(actor, creatureSpells);
