@@ -296,14 +296,14 @@ class ActorCreator {
             const newSpells = await this._prepareSpellsArray(spells[key], compendium);
             Array.prototype.push.apply(spellsArray, newSpells);
         }
-        return spells;
+        return spellsArray;
     }
 
     public async spellsAdder(actor: any, spells: object): Promise<void> {
         if (!spells) return;
-        await this._prepareSpellsObject(spells);
+        const spellList = await this._prepareSpellsObject(spells);
 
-
+        await actor.createEmbeddedEntity("OwnedItem", spellList);
     }
 
     public async actorCreator(markdownText: string) {
