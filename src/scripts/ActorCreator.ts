@@ -290,10 +290,11 @@ class ActorCreator {
 
     private async _prepareSpellsObject(spells: object): Promise<object> {
         const compendium = await this._getCompendiums();
-
+        let spellsArray = [];
         for (const key in spells) {
             if (!spells.hasOwnProperty(key)) continue;
-            spells[key] = await this._prepareSpellsArray(spells[key], compendium);
+            const newSpells = await this._prepareSpellsArray(spells[key], compendium);
+            Array.prototype.push.apply(spellsArray, newSpells);
         }
         return spells;
     }
