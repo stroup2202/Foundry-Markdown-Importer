@@ -232,7 +232,13 @@ class ActorCreator {
             },
         }
         Object.assign(thisItem.data, this._makeRangeTargetStructure(itemData?.['data']?.['range']));
-        await actor.createEmbeddedEntity("OwnedItem", thisItem);
+        try {
+            await actor.createEmbeddedEntity("OwnedItem", thisItem);
+        }
+        catch (e) {
+            console.log(e);
+        }
+
 
     }
 
@@ -333,7 +339,7 @@ class ActorCreator {
         });
         if (creatureAbilities) this.abilitiesAdder(actor, creatureAbilities, creatureStats);
         if (creatureLegendaryActions) this.abilitiesAdder(actor, creatureLegendaryActions, creatureStats);
-        if (creatureSpells) this.spellsAdder(actor, creatureSpells);
+        if (creatureSpells) await this.spellsAdder(actor, creatureSpells);
     }
 
 }

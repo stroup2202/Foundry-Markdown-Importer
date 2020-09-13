@@ -24,7 +24,7 @@ class MarkdownParser {
         'Perception': 'prc',
         'Performance': 'prf',
         'Persuasion': 'per',
-        'Religion ': 'rel',
+        'Religion': 'rel',
         'Sleight of Hand': 'slt',
         'Stealth': 'ste',
         'Survival': 'sur',
@@ -144,7 +144,7 @@ class MarkdownParser {
         const stats = [...text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g)];
         const updatedStats = {Str: 0, Dex: 0, Con: 0, Int: 0, Wis: 0, Cha: 0};
         stats.forEach((stat, index) => {
-            updatedStats[Object.keys(updatedStats)[index]] = (stat[1]);
+            updatedStats[Object.keys(updatedStats)[index]] = Number(stat[1]);
         })
         return updatedStats;
     }
@@ -162,7 +162,7 @@ class MarkdownParser {
         if (!match) return;
         const savesMatch = [...match[1].matchAll(/(\w{3}) \+([0-9]+)/g)];
         savesMatch.forEach((save) => {
-            savesObject[save[1]] = save[2];
+            savesObject[save[1]] = Number(save[2]);
         })
         return savesObject;
     }
@@ -180,7 +180,7 @@ class MarkdownParser {
         if (!match) return;
         const skills = [...match[0].matchAll(/(\w+) \+([0-9]+)/g)];
         skills.forEach((skill) => {
-            skillsObject[skill[1]] = skill[2];
+            skillsObject[skill[1]] = Number(skill[2]);
         })
         return skillsObject;
     }
@@ -343,7 +343,7 @@ class MarkdownParser {
     public getSpellcastingStats(text: string): object {
         const spellcastingLevel = [...text.match(/([0-9]+)\w{1,2}-level spellcaster/)];
         const spellcastingModifier = [...text.match(/spellcasting ability is (\w+)/)];
-        return {level: spellcastingLevel[1], modifier: spellcastingModifier[1]};
+        return {level: Number(spellcastingLevel[1]), modifier: spellcastingModifier[1]};
     }
 
     /**
