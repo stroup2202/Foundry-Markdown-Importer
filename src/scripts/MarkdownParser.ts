@@ -411,7 +411,7 @@ class MarkdownParser {
         const spellsObject = {};
         matchedSpells.forEach((spell) => {
             const typeOfSpell = spell[2] ? spell[2] : spell[1];
-            spellsObject[typeOfSpell] = spell[3].replace("*", "").split(", ");
+            spellsObject[typeOfSpell] = spell[3].replace("*", "").split(",");
         })
         return spellsObject;
     }

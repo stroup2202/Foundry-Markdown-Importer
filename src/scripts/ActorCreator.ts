@@ -78,7 +78,7 @@ class ActorCreator {
         const creatureSenses = MarkdownParser.getSenses(markdownText);
         const creatureDamageModifiers = MarkdownParser.getDamageModifiers(markdownText);
 
-        const traits = this._makeResistancesStructure(creatureDamageModifiers)  ;
+        const traits = this._makeResistancesStructure(creatureDamageModifiers);
         traits['size'] = MarkdownParser.convertSizes(creatureSizeAndAlignment['size']);
         traits['languages'] = {
             custom: creatureLanguages
@@ -250,6 +250,61 @@ class ActorCreator {
         }
     }
 
+    /**
+     * Makes text have first letters of each words uppercase and the rest lowercase
+     *
+     * @param text - text to be converted
+     * @private
+     */
+    private _makeTitleCase(text: string): string {
+        const lowerCaseWords = ['the', 'of', 'in'];
+        const words = text.trim().split(" ");
+
+        for (let i = 0; i < words.length; i++) {
+            if (!lowerCaseWords.includes(words[i])) words[i] = words[i][0].toUpperCase() + words[i].substr(1);
+        }
+
+        return words.join(" ");
+    }
+
+    private async _getCompendiums() {
+        const pack = game.packs.get("dnd5e.spells");
+        await pack.getIndex();
+        return pack;
+    }
+
+    private async _getEntityFromCompendium(compendium, spellName) {
+        let entry = compendium.index.find(e => e.name === spellName);
+        return await compendium.getEntry(entry._id);
+    }
+
+    private async _prepareSpellsArray(spells: Array<string>, compendium): Promise<Array<any>> {
+        for (let spell of spells) {
+            let index = spells.indexOf(spell);
+            spell = this._makeTitleCase(spell);
+            spells[index] = await this._getEntityFromCompendium(compendium, spell)
+        }
+
+        return spells;
+    }
+
+    private async _prepareSpellsObject(spells: object): Promise<object> {
+        const compendium = await this._getCompendiums();
+
+        for (const key in spells) {
+            if (!spells.hasOwnProperty(key)) continue;
+            spells[key] = await this._prepareSpellsArray(spells[key], compendium);
+        }
+        return spells;
+    }
+
+    public async spellsAdder(actor: any, spells: object): Promise<void> {
+        if (!spells) return;
+        await this._prepareSpellsObject(spells);
+
+
+    }
+
     public async actorCreator(markdownText: string) {
         const creatureStats = MarkdownParser.getCreatureStats(markdownText);
         const creatureSaves = MarkdownParser.getSavingThrowMods(markdownText);
@@ -277,6 +332,7 @@ class ActorCreator {
         });
         if (creatureAbilities) this.abilitiesAdder(actor, creatureAbilities, creatureStats);
         if (creatureLegendaryActions) this.abilitiesAdder(actor, creatureLegendaryActions, creatureStats);
+        if (creatureSpells) this.spellsAdder(actor, creatureSpells);
     }
 
 }
