@@ -147,6 +147,27 @@ class ActorCreator {
     }
 
     /**
+     * Returns a foundry friendly structure for the data field of the actor
+     *
+     * @param markdownText - user input text
+     * @param creatureProficiency - proficiency of the actor
+     * @param creatureAbilities - abilities object of the actor
+     * @param creatureStats - stats of the actor
+     * @private
+     */
+    private _makeDataStructure(markdownText: string, creatureProficiency: number, creatureAbilities: object, creatureStats: object): object {
+        const creatureSaves = MarkdownParser.getSavingThrowMods(markdownText);
+
+        return {
+            abilities: this._makeAbilitiesStructure(creatureStats, creatureSaves, creatureProficiency),
+            attributes: this._makeAttributesStructure(markdownText, creatureProficiency, creatureAbilities),
+            details: this._makeDetailsStructure(markdownText, creatureAbilities),
+            traits: this._makeTraitsStructure(markdownText),
+            skills: this._makeSkillsStructure(markdownText, creatureProficiency)
+        };
+    }
+
+    /**
      * Removes the to hit value from the damage array
      *
      * @param abilityData - data of the ability currently being cleaned
@@ -177,7 +198,7 @@ class ActorCreator {
                 units: 'self'
             }
         } else {
-            structure['range'] = abilityRange.doubleRange.short ? abilityRange.doubleRange : abilityRange.singleRange
+            structure['range'] = abilityRange.doubleRange.short ? Number(abilityRange.doubleRange) : Number(abilityRange.singleRange)
         }
         return structure;
     }
@@ -198,6 +219,12 @@ class ActorCreator {
         return;
     }
 
+    /**
+     * Returns an object for the activation of an attack
+     *
+     * @param ability - ability to get the activation of
+     * @private
+     */
     private _getActivation(ability: any): object {
         const activationObject = {type: '', cost: 0, condition: ''};
         if (ability?.cost) {
@@ -261,7 +288,7 @@ class ActorCreator {
         const packKeys = game.packs.keys();
         const spellCompendiums = [];
         for (const key of packKeys) {
-            if (key.includes('spell'))  {
+            if (key.includes('spell')) {
                 const pack = game.packs.get(key);
                 await pack.getIndex()
                 spellCompendiums.push(pack)
@@ -278,7 +305,7 @@ class ActorCreator {
      * @private
      */
     private async _getEntityFromCompendium(compendiums, spellName) {
-        for (const compendium of compendiums){
+        for (const compendium of compendiums) {
             let entry = compendium.index.find(e => e.name.toLowerCase() === spellName);
             if (entry) {
                 return await compendium.getEntry(entry._id);
@@ -335,26 +362,18 @@ class ActorCreator {
     }
 
     public async actorCreator(markdownText: string) {
-        const creatureStats = MarkdownParser.getCreatureStats(markdownText);
-        const creatureSaves = MarkdownParser.getSavingThrowMods(markdownText);
         const creatureAbilities = MarkdownParser.getAbilities(markdownText);
         const creatureLegendaryActions = MarkdownParser.getLegendaryActions(markdownText);
         const creatureSpells = MarkdownParser.getSpells(markdownText);
         const creatureProficiency = MarkdownParser.getProficiency(creatureAbilities);
+        const creatureStats = MarkdownParser.getCreatureStats(markdownText);
 
         let actor = await Actor.create({
             name: MarkdownParser.getCreatureName(markdownText),
             type: "npc",
             img: "",
             sort: 12000,
-            data: {
-                abilities: this._makeAbilitiesStructure(creatureStats, creatureSaves, creatureProficiency),
-                attributes: this._makeAttributesStructure(markdownText, creatureProficiency, creatureAbilities),
-                details: this._makeDetailsStructure(markdownText, creatureAbilities),
-                traits: this._makeTraitsStructure(markdownText),
-                skills: this._makeSkillsStructure(markdownText, creatureProficiency)
-
-            },
+            data: this._makeDataStructure(markdownText, creatureProficiency, creatureAbilities, creatureStats),
             token: {},
             items: [],
             flags: {}
