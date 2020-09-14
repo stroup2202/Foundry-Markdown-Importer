@@ -70,6 +70,11 @@ class MarkdownParser {
         return this._resistanceMap[resistance];
     }
 
+    private _clearText(text:string): string {
+        text = text.replace(/_/g, '');
+        return text;
+    }
+
     /**
      * Returns a creature's name
      *
@@ -281,7 +286,7 @@ class MarkdownParser {
      * @param text - markdown text
      */
     public getAttackDamage(text: string): object {
-        const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( \+ ([0-9]+))?\) (\w+) damage/g)];
+        const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( \+ ([0-9]+))?\) (\w+) damage/g)]; //TODO Add support for negative modifiers on rolls
         const attackObject = [];
         match.forEach((attack) => {
             attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4], attack[3]]);
@@ -355,14 +360,14 @@ class MarkdownParser {
      * @param text - markdown text
      */
     public getAbilities(text: string): object {
-        const match = [...text.matchAll(/\*\*\*(.*?)\*\*\* (.*)/g)];
+        const match = [...text.matchAll(/\*\*\*(.*?)\.\*\*\* (.*)/g)];
         const abilitiesObject = {};
         match.forEach((ability) => {
             abilitiesObject[ability[1]] = {
-                description: ability[2],
+                description: this._clearText(ability[2]),
                 data: {}
             };
-            if (ability[1] === 'Spellcasting.') abilitiesObject[ability[1]].data = this.getSpellcastingStats(ability[2]);
+            if (ability[1] === 'Spellcasting') abilitiesObject[ability[1]].data = this.getSpellcastingStats(ability[2]);
             else abilitiesObject[ability[1]].data = this.getAttack(ability[2]);
         })
         return abilitiesObject;
@@ -425,7 +430,7 @@ class MarkdownParser {
     public getProficiency(abilities: object): number {
         for (const key in abilities) {
             if (!abilities.hasOwnProperty(key)) continue;
-            if (abilities[key]?.data?.hit && abilities[key]?.data?.damage[0][2])
+            if (abilities[key]?.data?.hit && abilities[key]?.data?.damage?.[0]?.[2])
                 return abilities[key].data.hit - abilities[key].data.damage[0][2];
         }
         return 0;

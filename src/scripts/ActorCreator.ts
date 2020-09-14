@@ -84,7 +84,6 @@ class ActorCreator {
             custom: creatureLanguages
         };
         traits['senses'] = creatureSenses['vision'];
-
         return traits;
     }
 
@@ -92,9 +91,10 @@ class ActorCreator {
      * Returns a foundry friendly structure for the details part
      *
      * @param markdownText - text to be parsed
+     * @param abilities - object structure of all abilities to get the spellcasting level if needed
      * @private
      */
-    private _makeDetailsStructure(markdownText: string): object {
+    private _makeDetailsStructure(markdownText: string, abilities): object {
         const structure = {};
         const creatureSizeAndAlignment = MarkdownParser.getCreatureSizeAndAlignment(markdownText);
         const creatureChallenge = MarkdownParser.getChallenge(markdownText);
@@ -103,6 +103,7 @@ class ActorCreator {
         structure['type'] = creatureSizeAndAlignment['race'];
         structure['cr'] = creatureChallenge['CR']
         structure['xp'] = {value: creatureChallenge['XP']};
+        structure['spellLevel'] = abilities?.Spellcasting?.data?.level;
 
         return structure;
     }
@@ -129,9 +130,10 @@ class ActorCreator {
      *
      * @param markdownText - text to be parsed
      * @param creatureProficiency - creature's proficiency modifier
+     * @param abilities - abilities object for extracting the spellcaster abilities of the creature
      * @private
      */
-    private _makeAttributesStructure(markdownText: string, creatureProficiency: number): object {
+    private _makeAttributesStructure(markdownText: string, creatureProficiency: number, abilities): object {
         const structure = {};
         const creatureArmor = MarkdownParser.getCreatureACAndSource(markdownText);
 
@@ -139,6 +141,7 @@ class ActorCreator {
         structure['hp'] = this._makeHpStructure(markdownText);
         structure['speed'] = MarkdownParser.getCreatureSpeed(markdownText);
         structure['prof'] = creatureProficiency;
+        structure['spellcasting'] = MarkdownParser.shortenAbilities(abilities?.Spellcasting?.data?.modifier);
 
         return structure;
     }
@@ -232,14 +235,7 @@ class ActorCreator {
             },
         }
         Object.assign(thisItem.data, this._makeRangeTargetStructure(itemData?.['data']?.['range']));
-        try {
-            await actor.createEmbeddedEntity("OwnedItem", thisItem);
-        }
-        catch (e) {
-            console.log(e);
-        }
-
-
+        await actor.createEmbeddedEntity("OwnedItem", thisItem);
     }
 
     /**
@@ -257,43 +253,39 @@ class ActorCreator {
     }
 
     /**
-     * Makes text have first letters of each words uppercase and the rest lowercase
-     *
-     * @param text - text to be converted
-     * @private
-     */
-    private _makeTitleCase(text: string): string {
-        const lowerCaseWords = ['the', 'of', 'in'];
-        const words = text.trim().split(" ");
-
-        for (let i = 0; i < words.length; i++) {
-            if (!lowerCaseWords.includes(words[i])) words[i] = words[i][0].toUpperCase() + words[i].substr(1);
-        }
-
-        return words.join(" ");
-    }
-
-    /**
-     * Returns the compendium structure with ids
+     * Returns an array of all the compendiums that have the identifier `spell` in their name
      *
      * @private
      */
     private async _getCompendiums() {
-        const pack = game.packs.get("dnd5e.spells");
-        await pack.getIndex();
-        return pack;
+        const packKeys = game.packs.keys();
+        const spellCompendiums = [];
+        for (const key of packKeys) {
+            if (key.includes('spell'))  {
+                const pack = game.packs.get(key);
+                await pack.getIndex()
+                spellCompendiums.push(pack)
+            }
+        }
+        return spellCompendiums;
     }
 
     /**
      * Returns an entity from the compendium
      *
-     * @param compendium - source compendium
+     * @param compendiums - source compendiums
      * @param spellName - name of the spell
      * @private
      */
-    private async _getEntityFromCompendium(compendium, spellName) {
-        let entry = compendium.index.find(e => e.name === spellName);
-        return await compendium.getEntry(entry._id);
+    private async _getEntityFromCompendium(compendiums, spellName) {
+        for (const compendium of compendiums){
+            let entry = compendium.index.find(e => e.name.toLowerCase() === spellName);
+            if (entry) {
+                return await compendium.getEntry(entry._id);
+            }
+        }
+        ui.notifications.warn(`${spellName} has not been found`);
+
     }
 
     /**
@@ -306,8 +298,7 @@ class ActorCreator {
     private async _prepareSpellsArray(spells: Array<string>, compendium): Promise<Array<any>> {
         for (let spell of spells) {
             let index = spells.indexOf(spell);
-            spell = this._makeTitleCase(spell);
-            spells[index] = await this._getEntityFromCompendium(compendium, spell)
+            spells[index] = await this._getEntityFromCompendium(compendium, spell.toLowerCase().trim())
         }
 
         return spells;
@@ -320,11 +311,11 @@ class ActorCreator {
      * @private
      */
     private async _prepareSpellsObject(spells: object): Promise<object> {
-        const compendium = await this._getCompendiums();
+        const compendiums = await this._getCompendiums();
         let spellsArray = [];
         for (const key in spells) {
             if (!spells.hasOwnProperty(key)) continue;
-            const newSpells = await this._prepareSpellsArray(spells[key], compendium);
+            const newSpells = await this._prepareSpellsArray(spells[key], compendiums);
             Array.prototype.push.apply(spellsArray, newSpells);
         }
         return spellsArray;
@@ -358,8 +349,8 @@ class ActorCreator {
             sort: 12000,
             data: {
                 abilities: this._makeAbilitiesStructure(creatureStats, creatureSaves, creatureProficiency),
-                attributes: this._makeAttributesStructure(markdownText, creatureProficiency),
-                details: this._makeDetailsStructure(markdownText),
+                attributes: this._makeAttributesStructure(markdownText, creatureProficiency, creatureAbilities),
+                details: this._makeDetailsStructure(markdownText, creatureAbilities),
                 traits: this._makeTraitsStructure(markdownText),
                 skills: this._makeSkillsStructure(markdownText, creatureProficiency)
 
