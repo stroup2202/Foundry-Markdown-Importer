@@ -5,7 +5,7 @@
   "author": "HadaIonut",
   "version": "0.0.1",
   "esmodules": ["scripts/MarkdownImporter.js"],
-  "styles": ["scripts/MarkdownParser.css"],
+  "styles": ["styles/Foundry-Markdown-Importer.css"],
   "minimumCoreVersion": "0.7.0",
   "compatibleCoreVersion": "0.7.0",
   "url": "",
