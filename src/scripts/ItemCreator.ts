@@ -192,7 +192,14 @@ class ItemCreator {
             },
         }
         Object.assign(thisItem.data, this._makeRangeTargetStructure(itemData?.['data']?.['range']));
-        await actor.createEmbeddedEntity("OwnedItem", thisItem);
+        try {
+            await actor.createEmbeddedEntity("OwnedItem", thisItem);
+        }
+        catch (e) {
+            ui.notifications.error(`There has been an error while creating ${itemName}`);
+            console.error(e);
+        }
+
     }
 
     /**
