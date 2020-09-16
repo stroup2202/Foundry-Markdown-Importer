@@ -45,6 +45,7 @@ class ItemCreator {
             }
         }
         ui.notifications.warn(`${spellName} has not been found`);
+        return ;
 
     }
 
@@ -58,10 +59,12 @@ class ItemCreator {
     private async _prepareSpellsArray(spells: Array<string>, compendium): Promise<Array<any>> {
         for (let spell of spells) {
             let index = spells.indexOf(spell);
-            spells[index] = await this._getEntityFromCompendium(compendium, spell.toLowerCase().trim())
+            spells[index] = await this._getEntityFromCompendium(compendium, spell.toLowerCase().trim());
         }
 
-        return spells;
+        return spells.filter((el)=>{
+            return el != null;
+        });
     }
 
     /**

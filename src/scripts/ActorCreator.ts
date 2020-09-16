@@ -184,7 +184,7 @@ class ActorCreator {
             token: {},
             items: [],
             flags: {}
-        });
+        }, {renderSheet: true});
 
         if (creatureAbilities) ItemCreator.abilitiesAdder(actor, creatureAbilities, creatureStats);
         if (creatureLegendaryActions) ItemCreator.abilitiesAdder(actor, creatureLegendaryActions, creatureStats);
