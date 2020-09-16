@@ -44,7 +44,7 @@ class ItemCreator {
                 return await compendium.getEntry(entry._id);
             }
         }
-        ui.notifications.warn(`${spellName} has not been found`);
+        ui.notifications.warn(`${spellName} not found`);
         return ;
 
     }
@@ -62,9 +62,7 @@ class ItemCreator {
             spells[index] = await this._getEntityFromCompendium(compendium, spell.toLowerCase().trim());
         }
 
-        return spells.filter((el)=>{
-            return el != null;
-        });
+        return spells.filter(el=> el != null)
     }
 
     /**
@@ -143,8 +141,8 @@ class ItemCreator {
     private _getAttackAbility(ability: any, actorStats: object): string {
         if (!ability?.data?.damage?.[0]) return;
         for (const key in actorStats) {
-            if (!actorStats.hasOwnProperty(key)) continue;
-            if (Number(ability?.data?.damage[0][2]) === MarkdownParser.getAbilityModifier(actorStats[key])) return key.toLowerCase();
+            if (actorStats.hasOwnProperty(key))
+                if (Number(ability?.data?.damage[0][2]) === MarkdownParser.getAbilityModifier(actorStats[key])) return key.toLowerCase();
         }
         return;
     }
@@ -211,8 +209,8 @@ class ItemCreator {
      */
     public abilitiesAdder(actor: any, abilities: object, actorStats: object): void {
         for (const key in abilities) {
-            if (!abilities.hasOwnProperty(key)) continue;
-            this.itemCreator(actor, key, abilities[key], actorStats);
+            if (abilities.hasOwnProperty(key))
+                this.itemCreator(actor, key, abilities[key], actorStats);
         }
     }
 

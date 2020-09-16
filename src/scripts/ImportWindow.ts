@@ -2,23 +2,24 @@ import ActorCreator from "./ActorCreator";
 
 export default class ImportWindow extends Application {
 
-    static get defaultOptions()
-    {
-        const options = super.defaultOptions;
-        options.id = "md-importer";
-        options.template = "modules\\Foundry-Markdown-Importer\\templates\\importer.html"
-        options.resizable = false;
-        options.height = "auto";
-        options.width = 400;
-        options.minimizable = true;
-        options.title = "Markdown Importer"
-        return options;
+    static get defaultOptions() {
+        return {
+            ...super.defaultOptions,
+            id : "md-importer",
+            template : "modules\\Foundry-Markdown-Importer\\templates\\importer.html",
+            resizable : false,
+            height : "auto",
+            width : 400,
+            minimizable : true,
+            title : "Markdown Importer"
+        }
     }
+
     activateListeners(html) {
         super.activateListeners(html);
         html.find(".text-input").change(()=>{
             // @ts-ignore
             ActorCreator.actorCreator($("[name='text']")[0].value);
-        })
+        });
     }
 }
