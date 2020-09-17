@@ -136,6 +136,19 @@ class ActorCreator {
         };
     }
 
+    private _makeResourcesStructure(propsRes: any):object {
+        return {
+            legact: {
+                value: propsRes?.numberOfLegendaryActions,
+                max: propsRes?.numberOfLegendaryActions
+            },
+            legres: {
+                value: propsRes?.numberOfLegendaryResistances,
+                max: propsRes?.numberOfLegendaryResistances
+            }
+        }
+    }
+
     /**
      * Returns a foundry friendly structure for the data field of the actor
      *
@@ -151,7 +164,8 @@ class ActorCreator {
             attributes: this._makeAttributesStructure(propsData.attributes, creatureProficiency, creatureAbilities),
             details: this._makeDetailsStructure(propsData.details, creatureAbilities),
             traits: this._makeTraitsStructure(propsData.traits),
-            skills: this._makeSkillsStructure(propsData.skills, creatureProficiency)
+            skills: this._makeSkillsStructure(propsData.skills, creatureProficiency),
+            resources: this._makeResourcesStructure(propsData.resources)
         };
     }
 
@@ -189,6 +203,10 @@ class ActorCreator {
                 },
                 skills: {
                    skills : MarkdownParser.getSkills(markdownText)
+                },
+                resources: {
+                    numberOfLegendaryActions : MarkdownParser.getNumberOfLegendaryActions(markdownText),
+                    numberOfLegendaryResistances: MarkdownParser.getNumberOfLegendaryResistances(markdownText)
                 }
             }
         }

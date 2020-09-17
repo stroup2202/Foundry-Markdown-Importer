@@ -70,7 +70,7 @@ class MarkdownParser {
         return this._resistanceMap[resistance];
     }
 
-    private _clearText(text:string): string {
+    private _clearText(text: string): string {
         text = text.replace(/_/g, '');
         return text;
     }
@@ -385,7 +385,7 @@ class MarkdownParser {
      */
     public getLegendaryActions(text: string): object {
         const match = [...text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g)];
-        const legendaryActionDescription = text.match(/> (.* can take [0-9]+ legendary actions, .*)/);
+
         const actionObject = {};
         match.forEach((action) => {
             actionObject[action[1]] = {
@@ -396,12 +396,30 @@ class MarkdownParser {
             actionObject[action[1]].data = this.getAttack(action[4]);
             actionObject[action[1]].cost = action[3] ? action[3] : 1;
         })
-        if (!legendaryActionDescription) return actionObject;
-        actionObject['Legendary Actions'] = {
-            description: legendaryActionDescription?.[1],
-            data: this.getAttack(legendaryActionDescription?.[1])
-        }
+
         return actionObject;
+    }
+
+    /**
+     * Returns the number of legendary actions from an actor
+     *
+     * @param text - markdown text
+     */
+    public getNumberOfLegendaryActions(text: string): number {
+        const legendaryActionDescription = text.match(/> .* can take ([0-9]+) legendary actions, .*/);
+
+        return Number(legendaryActionDescription?.[1]);
+    }
+
+    /**
+     * Returns the number of legendary resistances from an actor
+     *
+     * @param text - markdown text
+     */
+    public getNumberOfLegendaryResistances(text: string): number {
+        const legendaryRes = text.match(/> \*\*\*Legendary Resistance \(([0-9]+)\/Day\)\.\*\*\*/);
+
+        return Number(legendaryRes?.[1]);
     }
 
     /**
