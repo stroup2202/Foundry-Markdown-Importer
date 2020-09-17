@@ -155,6 +155,12 @@ class ActorCreator {
         };
     }
 
+    /**
+     * Returns an object of all the data parsed
+     *
+     * @param markdownText - input text
+     * @private
+     */
     private _makeProps(markdownText: string): any {
         const sizeAndAlignment = MarkdownParser.getCreatureSizeAndAlignment(markdownText);
         const props = {
