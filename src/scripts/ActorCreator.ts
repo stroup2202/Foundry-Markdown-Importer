@@ -79,13 +79,14 @@ class ActorCreator {
         const creatureSenses = MarkdownParser.getSenses(markdownText);
         const creatureDamageModifiers = MarkdownParser.getDamageModifiers(markdownText);
 
-        const traits = this._makeResistancesStructure(creatureDamageModifiers);
-        traits['size'] = MarkdownParser.convertSizes(creatureSizeAndAlignment['size']);
-        traits['languages'] = {
-            custom: creatureLanguages
+        return {
+            ...this._makeResistancesStructure(creatureDamageModifiers),
+            size: MarkdownParser.convertSizes(creatureSizeAndAlignment['size']),
+            languages: {
+                custom: creatureLanguages
+            },
+            senses: creatureSenses['vision']
         };
-        traits['senses'] = creatureSenses['vision'];
-        return traits;
     }
 
     /**
@@ -96,17 +97,18 @@ class ActorCreator {
      * @private
      */
     private _makeDetailsStructure(markdownText: string, abilities): object {
-        const structure = {};
         const creatureSizeAndAlignment = MarkdownParser.getCreatureSizeAndAlignment(markdownText);
         const creatureChallenge = MarkdownParser.getChallenge(markdownText);
 
-        structure['alignment'] = creatureSizeAndAlignment['alignment'];
-        structure['type'] = creatureSizeAndAlignment['race'];
-        structure['cr'] = creatureChallenge['CR']
-        structure['xp'] = {value: creatureChallenge['XP']};
-        structure['spellLevel'] = abilities?.Spellcasting?.data?.level;
-
-        return structure;
+        return {
+            alignment: creatureSizeAndAlignment['alignment'],
+            type: creatureSizeAndAlignment['race'],
+            cr: creatureChallenge['CR'],
+            xp: {
+                value: creatureChallenge['XP']
+            },
+            spellLevel: abilities?.Spellcasting?.data?.level
+        };
     }
 
     /**
@@ -116,14 +118,12 @@ class ActorCreator {
      * @private
      */
     private _makeHpStructure(markdownText: string): object {
-        const structure = {};
         const creatureHP = MarkdownParser.getCreatureHP(markdownText);
-
-        structure['value'] = Number(creatureHP['HP']);
-        structure['max'] = Number(creatureHP['HP']);
-        structure['formula'] = creatureHP['formula'];
-
-        return structure;
+        return {
+            value: Number(creatureHP['HP']),
+            max: Number(creatureHP['HP']),
+            formula: creatureHP['formula']
+        };
     }
 
     /**
@@ -135,16 +135,17 @@ class ActorCreator {
      * @private
      */
     private _makeAttributesStructure(markdownText: string, creatureProficiency: number, abilities): object {
-        const structure = {};
         const creatureArmor = MarkdownParser.getCreatureACAndSource(markdownText);
 
-        structure['ac'] = {value: Number(creatureArmor['AC'])};
-        structure['hp'] = this._makeHpStructure(markdownText);
-        structure['speed'] = MarkdownParser.getCreatureSpeed(markdownText);
-        structure['prof'] = creatureProficiency;
-        structure['spellcasting'] = MarkdownParser.shortenAbilities(abilities?.Spellcasting?.data?.modifier);
-
-        return structure;
+        return {
+            ac: {
+                value: Number(creatureArmor['AC'])
+            },
+            hp: this._makeHpStructure(markdownText),
+            speed: MarkdownParser.getCreatureSpeed(markdownText),
+            prof: creatureProficiency,
+            spellcasting: MarkdownParser.shortenAbilities(abilities?.Spellcasting?.data?.modifier)
+        };
     }
 
     /**
@@ -168,7 +169,7 @@ class ActorCreator {
         };
     }
 
-    private _makeProps (markdownText: string): any {
+    private _makeProps(markdownText: string): any {
         const props = {
             name: MarkdownParser.getCreatureName(markdownText),
             abilities: MarkdownParser.getAbilities(markdownText),
@@ -181,7 +182,7 @@ class ActorCreator {
     }
 
     public async actorCreator(markdownText: string) {
-        const props =  this._makeProps(markdownText);
+        const props = this._makeProps(markdownText);
 
         let actor = await Actor.create({
             name: props.name,
