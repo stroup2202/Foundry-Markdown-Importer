@@ -170,12 +170,33 @@ class ActorCreator {
     }
 
     private _makeProps(markdownText: string): any {
+        const sizeAndAlignment = MarkdownParser.getCreatureSizeAndAlignment(markdownText);
         const props = {
             name: MarkdownParser.getCreatureName(markdownText),
             abilities: MarkdownParser.getAbilities(markdownText),
             legendaryActions: MarkdownParser.getLegendaryActions(markdownText),
             spells: MarkdownParser.getSpells(markdownText),
-            stats: MarkdownParser.getCreatureStats(markdownText)
+            stats: MarkdownParser.getCreatureStats(markdownText),
+            data: {
+                attributes: {
+                    armor: MarkdownParser.getCreatureACAndSource(markdownText),
+                    speed: MarkdownParser.getCreatureSpeed(markdownText),
+                    hp: MarkdownParser.getCreatureHP(markdownText)
+                },
+                details: {
+                    alignment: sizeAndAlignment['alignment'],
+                    challenge: MarkdownParser.getChallenge(markdownText)
+                },
+                traits: {
+                    size: sizeAndAlignment['size'],
+                    languages: MarkdownParser.getLanguages(markdownText).toLocaleLowerCase(),
+                    senses : MarkdownParser.getSenses(markdownText),
+                    damageModifiers : MarkdownParser.getDamageModifiers(markdownText),
+                },
+                skills: {
+                   skills : MarkdownParser.getSkills(markdownText)
+                }
+            }
         }
         props['proficiency'] = MarkdownParser.getProficiency(props.abilities);
         return props
