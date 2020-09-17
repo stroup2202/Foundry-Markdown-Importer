@@ -201,7 +201,6 @@ class ItemCreator {
             Utilts.notificationCreator('error', `There has been an error while creating ${itemName}`)
             console.error(e);
         }
-
     }
 
     /**

@@ -136,6 +136,12 @@ class ActorCreator {
         };
     }
 
+    /**
+     * Returns the resources structure
+     *
+     * @param propsRes - object that contains the resources from the parser
+     * @private
+     */
     private _makeResourcesStructure(propsRes: any):object {
         return {
             legact: {
