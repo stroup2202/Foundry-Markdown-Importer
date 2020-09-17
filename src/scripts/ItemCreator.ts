@@ -130,7 +130,7 @@ class ItemCreator {
                 units: 'self'
             }
         } else {
-            structure['range'] = abilityRange.doubleRange.short ? Number(abilityRange.doubleRange) : Number(abilityRange.singleRange)
+            structure['range'] = abilityRange.doubleRange.short ? abilityRange.doubleRange : abilityRange.singleRange
         }
         return structure;
     }
@@ -211,10 +211,10 @@ class ItemCreator {
      * @param abilities - abilities object
      * @param actorStats - stats of the actor
      */
-    public abilitiesAdder(actor: any, abilities: object, actorStats: object): void {
+    public async abilitiesAdder(actor: any, abilities: object, actorStats: object): Promise<void> {
         for (const key in abilities) {
             if (abilities.hasOwnProperty(key))
-                this.itemCreator(actor, key, abilities[key], actorStats);
+                await this.itemCreator(actor, key, abilities[key], actorStats);
         }
     }
 

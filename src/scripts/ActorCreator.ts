@@ -210,8 +210,8 @@ class ActorCreator {
             flags: {}
         }, {renderSheet: true});
 
-        if (props.abilities) ItemCreator.abilitiesAdder(actor, props.abilities, props.stats);
-        if (props.legendaryActions) ItemCreator.abilitiesAdder(actor, props.legendaryActions, props.stats);
+        if (props.abilities) await ItemCreator.abilitiesAdder(actor, props.abilities, props.stats);
+        if (props.legendaryActions) await ItemCreator.abilitiesAdder(actor, props.legendaryActions, props.stats);
         if (props.spells) await ItemCreator.spellsAdder(actor, props.spells);
     }
 

@@ -6,7 +6,7 @@
   "version": "0.0.1",
   "esmodules": ["scripts/MarkdownImporter.js"],
   "styles": ["styles/Foundry-Markdown-Importer.css"],
-  "minimumCoreVersion": "0.7.0",
+  "minimumCoreVersion": "0.6.0",
   "compatibleCoreVersion": "0.7.0",
   "url": "",
   "manifest": "",
