@@ -78,7 +78,10 @@ class ItemCreator {
         for (const key in spells) {
             if (!spells.hasOwnProperty(key)) continue;
             const newSpells = await this._prepareSpellsArray(spells[key], compendiums);
-            Array.prototype.push.apply(spellsArray, newSpells);
+            spellsArray = [
+                ...spellsArray,
+                ...newSpells
+            ]
         }
         return spellsArray;
     }

@@ -168,27 +168,35 @@ class ActorCreator {
         };
     }
 
+    private _makeProps (markdownText: string): any {
+        const props = {
+            name: MarkdownParser.getCreatureName(markdownText),
+            abilities: MarkdownParser.getAbilities(markdownText),
+            legendaryActions: MarkdownParser.getLegendaryActions(markdownText),
+            spells: MarkdownParser.getSpells(markdownText),
+            stats: MarkdownParser.getCreatureStats(markdownText)
+        }
+        props['proficiency'] = MarkdownParser.getProficiency(props.abilities);
+        return props
+    }
+
     public async actorCreator(markdownText: string) {
-        const creatureAbilities = MarkdownParser.getAbilities(markdownText);
-        const creatureLegendaryActions = MarkdownParser.getLegendaryActions(markdownText);
-        const creatureSpells = MarkdownParser.getSpells(markdownText);
-        const creatureProficiency = MarkdownParser.getProficiency(creatureAbilities);
-        const creatureStats = MarkdownParser.getCreatureStats(markdownText);
+        const props =  this._makeProps(markdownText);
 
         let actor = await Actor.create({
-            name: MarkdownParser.getCreatureName(markdownText),
+            name: props.name,
             type: "npc",
             img: "",
-            sort: 12000,
-            data: this._makeDataStructure(markdownText, creatureProficiency, creatureAbilities, creatureStats),
+            sort: 12000, //here to make it be last item in the list, not sure what 12000 means, i copy pasted this from somewhere
+            data: this._makeDataStructure(markdownText, props.proficiency, props.abilities, props.stats),
             token: {},
             items: [],
             flags: {}
         }, {renderSheet: true});
 
-        if (creatureAbilities) ItemCreator.abilitiesAdder(actor, creatureAbilities, creatureStats);
-        if (creatureLegendaryActions) ItemCreator.abilitiesAdder(actor, creatureLegendaryActions, creatureStats);
-        if (creatureSpells) await ItemCreator.spellsAdder(actor, creatureSpells);
+        if (props.abilities) ItemCreator.abilitiesAdder(actor, props.abilities, props.stats);
+        if (props.legendaryActions) ItemCreator.abilitiesAdder(actor, props.legendaryActions, props.stats);
+        if (props.spells) await ItemCreator.spellsAdder(actor, props.spells);
     }
 
 }

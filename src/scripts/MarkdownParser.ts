@@ -353,6 +353,7 @@ class MarkdownParser {
 
     /**
      * Returns a creature's abilities
+     * A creature's abilities could be for example attacks or features
      *
      * @Fields: description, data
      * @Note: `data` field may vary depending on the type of ability that is parsed
