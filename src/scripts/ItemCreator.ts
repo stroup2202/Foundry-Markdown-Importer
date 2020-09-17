@@ -1,4 +1,5 @@
 import MarkdownParser from "./MarkdownParser";
+import Utilts from "./Utilts";
 
 class ItemCreator {
     private static _instance: ItemCreator;
@@ -44,7 +45,7 @@ class ItemCreator {
                 return await compendium.getEntry(entry._id);
             }
         }
-        ui.notifications.warn(`${spellName} not found`);
+        Utilts.notificationCreator('warn', `${spellName} not found`)
         return ;
 
     }
@@ -194,7 +195,7 @@ class ItemCreator {
             await actor.createEmbeddedEntity("OwnedItem", thisItem);
         }
         catch (e) {
-            ui.notifications.error(`There has been an error while creating ${itemName}`);
+            Utilts.notificationCreator('error', `There has been an error while creating ${itemName}`)
             console.error(e);
         }
 
