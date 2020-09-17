@@ -36,16 +36,15 @@ class ActorCreator {
     /**
      * Returns the foundry friendly structure for skills
      *
-     * @param text - markdown text
+     * @param propSkills - object containing all the skills data from the parser
      * @param proficiency - proficiency score
      * @private
      */
-    private _makeSkillsStructure(text: string, proficiency: number): object {
-        const creatureSkills = MarkdownParser.getSkills(text);
+    private _makeSkillsStructure(propSkills: any, proficiency: number): object {
         const skillsObject = {};
-        for (const skill in creatureSkills) {
-            if (!creatureSkills.hasOwnProperty(skill)) continue;
-            skillsObject[MarkdownParser.shortenSkills(skill)] = {value: Math.floor(creatureSkills[skill] / proficiency)};
+        for (const skill in propSkills.skills) {
+            if (!propSkills.skills.hasOwnProperty(skill)) continue;
+            skillsObject[MarkdownParser.shortenSkills(skill)] = {value: Math.floor(propSkills.skills[skill] / proficiency)};
         }
         return skillsObject
     }
@@ -70,42 +69,34 @@ class ActorCreator {
     /**
      * Returns a foundry friendly structure for the traits part of the actor
      *
-     * @param markdownText - text to be parsed
      * @private
+     * @param propsTraits - object containing all the traits data extracted from the parser
      */
-    private _makeTraitsStructure(markdownText: string): object {
-        const creatureSizeAndAlignment = MarkdownParser.getCreatureSizeAndAlignment(markdownText);
-        const creatureLanguages = MarkdownParser.getLanguages(markdownText).toLocaleLowerCase();
-        const creatureSenses = MarkdownParser.getSenses(markdownText);
-        const creatureDamageModifiers = MarkdownParser.getDamageModifiers(markdownText);
-
+    private _makeTraitsStructure(propsTraits: any): object {
         return {
-            ...this._makeResistancesStructure(creatureDamageModifiers),
-            size: MarkdownParser.convertSizes(creatureSizeAndAlignment['size']),
+            ...this._makeResistancesStructure(propsTraits.damageModifiers),
+            size: MarkdownParser.convertSizes(propsTraits.size),
             languages: {
-                custom: creatureLanguages
+                custom: propsTraits.languages
             },
-            senses: creatureSenses['vision']
+            senses: propsTraits.senses['vision']
         };
     }
 
     /**
      * Returns a foundry friendly structure for the details part
      *
-     * @param markdownText - text to be parsed
+     * @param propsDetails - object containing all the details data from the parser
      * @param abilities - object structure of all abilities to get the spellcasting level if needed
      * @private
      */
-    private _makeDetailsStructure(markdownText: string, abilities): object {
-        const creatureSizeAndAlignment = MarkdownParser.getCreatureSizeAndAlignment(markdownText);
-        const creatureChallenge = MarkdownParser.getChallenge(markdownText);
-
+    private _makeDetailsStructure(propsDetails: any, abilities): object {
         return {
-            alignment: creatureSizeAndAlignment['alignment'],
-            type: creatureSizeAndAlignment['race'],
-            cr: creatureChallenge['CR'],
+            alignment: propsDetails.alignment,
+            type: propsDetails.race,
+            cr: propsDetails.challenge['CR'],
             xp: {
-                value: creatureChallenge['XP']
+                value: propsDetails.challenge['XP']
             },
             spellLevel: abilities?.Spellcasting?.data?.level
         };
@@ -114,35 +105,32 @@ class ActorCreator {
     /**
      * Returns a foundry friendly structure for the HP
      *
-     * @param markdownText - text to be parsed
      * @private
+     * @param propsHP - object that contains all the hp data extracted from markdown
      */
-    private _makeHpStructure(markdownText: string): object {
-        const creatureHP = MarkdownParser.getCreatureHP(markdownText);
+    private _makeHpStructure(propsHP: any): object {
         return {
-            value: Number(creatureHP['HP']),
-            max: Number(creatureHP['HP']),
-            formula: creatureHP['formula']
+            value: Number(propsHP['HP']),
+            max: Number(propsHP['HP']),
+            formula: propsHP['formula']
         };
     }
 
     /**
      * Returns a foundry friendly structure for the attributes tab
      *
-     * @param markdownText - text to be parsed
+     * @param propsAttributes - object containing all the attributes extracted from markdown
      * @param creatureProficiency - creature's proficiency modifier
      * @param abilities - abilities object for extracting the spellcaster abilities of the creature
      * @private
      */
-    private _makeAttributesStructure(markdownText: string, creatureProficiency: number, abilities): object {
-        const creatureArmor = MarkdownParser.getCreatureACAndSource(markdownText);
-
+    private _makeAttributesStructure(propsAttributes: any, creatureProficiency: number, abilities): object {
         return {
             ac: {
-                value: Number(creatureArmor['AC'])
+                value: Number(propsAttributes.armor['AC'])
             },
-            hp: this._makeHpStructure(markdownText),
-            speed: MarkdownParser.getCreatureSpeed(markdownText),
+            hp: this._makeHpStructure(propsAttributes.hp),
+            speed: propsAttributes.speed,
             prof: creatureProficiency,
             spellcasting: MarkdownParser.shortenAbilities(abilities?.Spellcasting?.data?.modifier)
         };
@@ -151,21 +139,19 @@ class ActorCreator {
     /**
      * Returns a foundry friendly structure for the data field of the actor
      *
-     * @param markdownText - user input text
+     * @param propsData - an object that contains all the data extracted from the parser
      * @param creatureProficiency - proficiency of the actor
      * @param creatureAbilities - abilities object of the actor
      * @param creatureStats - stats of the actor
      * @private
      */
-    private _makeDataStructure(markdownText: string, creatureProficiency: number, creatureAbilities: object, creatureStats: object): object {
-        const creatureSaves = MarkdownParser.getSavingThrowMods(markdownText);
-
+    private _makeDataStructure(propsData: any, creatureProficiency: number, creatureAbilities: object, creatureStats: object): object {
         return {
-            abilities: this._makeAbilitiesStructure(creatureStats, creatureSaves, creatureProficiency),
-            attributes: this._makeAttributesStructure(markdownText, creatureProficiency, creatureAbilities),
-            details: this._makeDetailsStructure(markdownText, creatureAbilities),
-            traits: this._makeTraitsStructure(markdownText),
-            skills: this._makeSkillsStructure(markdownText, creatureProficiency)
+            abilities: this._makeAbilitiesStructure(creatureStats, propsData.savingThrowMods, creatureProficiency),
+            attributes: this._makeAttributesStructure(propsData.attributes, creatureProficiency, creatureAbilities),
+            details: this._makeDetailsStructure(propsData.details, creatureAbilities),
+            traits: this._makeTraitsStructure(propsData.traits),
+            skills: this._makeSkillsStructure(propsData.skills, creatureProficiency)
         };
     }
 
@@ -178,6 +164,7 @@ class ActorCreator {
             spells: MarkdownParser.getSpells(markdownText),
             stats: MarkdownParser.getCreatureStats(markdownText),
             data: {
+                savingThrowMods: MarkdownParser.getSavingThrowMods(markdownText),
                 attributes: {
                     armor: MarkdownParser.getCreatureACAndSource(markdownText),
                     speed: MarkdownParser.getCreatureSpeed(markdownText),
@@ -185,6 +172,7 @@ class ActorCreator {
                 },
                 details: {
                     alignment: sizeAndAlignment['alignment'],
+                    race: sizeAndAlignment['race'],
                     challenge: MarkdownParser.getChallenge(markdownText)
                 },
                 traits: {
@@ -210,7 +198,7 @@ class ActorCreator {
             type: "npc",
             img: "",
             sort: 12000, //here to make it be last item in the list, not sure what 12000 means, i copy pasted this from somewhere
-            data: this._makeDataStructure(markdownText, props.proficiency, props.abilities, props.stats),
+            data: this._makeDataStructure(props.data, props.proficiency, props.abilities, props.stats),
             token: {},
             items: [],
             flags: {}
