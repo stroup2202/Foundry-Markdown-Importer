@@ -440,6 +440,11 @@ class MarkdownParser {
         return spellsObject;
     }
 
+    /**
+     * Returns a creature's number of available spellslots
+     *
+     * @param text - markdown text
+     */
     public getSpellSlots(text: string): object {
         const matchedSlots = [...text.matchAll(/([0-9]+)\w{1,2} level \(([0-9]+) slots?\)/g)];
         const slotsObject = {}

@@ -155,11 +155,6 @@ class ActorCreator {
         }
     }
 
-    private _makeSpellSlotsStructure (prosSpellSlots: any): object {
-
-        return
-    }
-
     /**
      * Returns a foundry friendly structure for the data field of the actor
      *
