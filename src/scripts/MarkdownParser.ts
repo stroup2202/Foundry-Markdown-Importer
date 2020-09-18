@@ -306,7 +306,7 @@ class MarkdownParser {
         let match = text.match(/DC ([0-9]+) (\w+)/);
         if (!match) return;
         const saveObject = {};
-        saveObject["dc"] = match[1];
+        saveObject["dc"] = Number(match[1]);
         saveObject["ability"] = this.shortenAbilities(match[2]);
         return saveObject;
     }
