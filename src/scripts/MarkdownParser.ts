@@ -32,6 +32,7 @@ class MarkdownParser {
 
     private _sizesMap: { [key: string]: string } = {
         "Gargantuan": "grg",
+        "Large": "lg",
         "Huge": "huge",
         "Medium": "med",
         "Small": "sm",
@@ -286,10 +287,10 @@ class MarkdownParser {
      * @param text - markdown text
      */
     public getAttackDamage(text: string): object {
-        const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( \+ ([0-9]+))?\) (\w+) damage/g)]; //TODO Add support for negative modifiers on rolls
+        const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( [+-] ([0-9]+))?\) (\w+) damage/g)];
         const attackObject = [];
         match.forEach((attack) => {
-            attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4], attack[3]]);
+            attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4], Number(attack[2]?.replace(/ /g, ''))]);
         })
         return attackObject
     }
@@ -362,7 +363,9 @@ class MarkdownParser {
      */
     public getAbilities(text: string): object {
         const match = [...text.matchAll(/\*\*\*(.*?)\.\*\*\* (.*)/g)];
+        const extraMatch = [...text.matchAll(/(&nbsp;)+\*\*(.*?)\.\*\* (.*)/g)];
         const abilitiesObject = {};
+
         match.forEach((ability) => {
             abilitiesObject[ability[1]] = {
                 description: this._clearText(ability[2]),
@@ -370,7 +373,15 @@ class MarkdownParser {
             };
             if (ability[1] === 'Spellcasting') abilitiesObject[ability[1]].data = this.getSpellcastingStats(ability[2]);
             else abilitiesObject[ability[1]].data = this.getAttack(ability[2]);
-        })
+        });
+
+        extraMatch.forEach((extraAbility)=>{
+            abilitiesObject[extraAbility[2]] = {
+                description: this._clearText(extraAbility[3]),
+                data: {}
+            };
+            abilitiesObject[extraAbility[2]].data = this.getAttack(extraAbility[3]);
+        });
         return abilitiesObject;
     }
 

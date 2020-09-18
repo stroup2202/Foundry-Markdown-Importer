@@ -12,7 +12,6 @@ class ItemCreator {
         return ItemCreator._instance;
     }
 
-
     /**
      * Returns an array of all the compendiums that have the identifier `spell` in their name
      *
