@@ -155,6 +155,11 @@ class ActorCreator {
         }
     }
 
+    private _makeSpellSlotsStructure (prosSpellSlots: any): object {
+
+        return
+    }
+
     /**
      * Returns a foundry friendly structure for the data field of the actor
      *
@@ -171,7 +176,8 @@ class ActorCreator {
             details: this._makeDetailsStructure(propsData.details, creatureAbilities),
             traits: this._makeTraitsStructure(propsData.traits),
             skills: this._makeSkillsStructure(propsData.skills, creatureProficiency),
-            resources: this._makeResourcesStructure(propsData.resources)
+            resources: this._makeResourcesStructure(propsData.resources),
+            spells: propsData.spellslots
         };
     }
 
@@ -213,7 +219,8 @@ class ActorCreator {
                 resources: {
                     numberOfLegendaryActions : MarkdownParser.getNumberOfLegendaryActions(markdownText),
                     numberOfLegendaryResistances: MarkdownParser.getNumberOfLegendaryResistances(markdownText)
-                }
+                },
+                spellslots: MarkdownParser.getSpellSlots(markdownText)
             }
         }
         props['proficiency'] = MarkdownParser.getProficiency(props.abilities);

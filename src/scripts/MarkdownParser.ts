@@ -440,6 +440,18 @@ class MarkdownParser {
         return spellsObject;
     }
 
+    public getSpellSlots(text: string): object {
+        const matchedSlots = [...text.matchAll(/([0-9]+)\w{1,2} level \(([0-9]+) slots?\)/g)];
+        const slotsObject = {}
+        matchedSlots.forEach((slot)=>{
+            slotsObject[`spell${slot[1]}`] = {
+                value: Number(slot[2]),
+                max: Number(slot[2])
+            };
+        })
+        return slotsObject;
+    }
+
     /**
      * Returns a creature's proficiency
      * The proficiency is calculated using an attack where the to hit score has the prof added adn the + to the damage roll doesn't
