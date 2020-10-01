@@ -6,7 +6,7 @@ export default class ImportWindow extends Application {
         return {
             ...super.defaultOptions,
             id : "md-importer",
-            template : "modules\\Foundry-Markdown-Importer\\templates\\importer.html",
+            template : "modules/Tetra-Cube-Importer/templates/importer.html",
             resizable : false,
             height : "auto",
             width : 400,
