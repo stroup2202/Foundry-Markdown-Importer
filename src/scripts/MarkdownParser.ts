@@ -13,7 +13,7 @@ class MarkdownParser {
         'Acrobatics': 'acr',
         'Animal Handling': 'ani',
         'Arcana': 'arc',
-        'Athletics ': 'ath',
+        'Athletics': 'ath',
         'Deception': 'dec',
         'History': 'his',
         'Insight': 'ins',
@@ -287,7 +287,7 @@ class MarkdownParser {
      * @param text - markdown text
      */
     public getAttackDamage(text: string): object {
-        const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( [+-] ([0-9]+))?\) (\w+) damage/g)];
+        const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( ?[+-] ?([0-9]+))?\) (\w+) damage/g)];
         const attackObject = [];
         match.forEach((attack) => {
             attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4], Number(attack[2]?.replace(/ /g, ''))]);

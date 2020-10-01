@@ -218,7 +218,8 @@ class ActorCreator {
                 spellslots: MarkdownParser.getSpellSlots(markdownText)
             }
         }
-        props['proficiency'] = MarkdownParser.getProficiency(props.abilities);
+        // @ts-ignore
+        props['proficiency'] = props['proficiency'] = Math.max(Math.floor((props?.data?.details?.challenge?.CR - 1) / 4) + 2, 2);
         return props
     }
 
