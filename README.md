@@ -1,3 +1,5 @@
+![Downloads](https://img.shields.io/github/downloads/HadaIonut/Foundry-Markdown-Importer/total)
+
 # Tetra-Cube Importer
 
 This is a Fondry VTT module that allows for simple monster sheet import via the 'view markdown' feature of Tetra-Cube monster builder.
