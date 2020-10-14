@@ -1,4 +1,4 @@
-![Downloads](https://img.shields.io/github/downloads/HadaIonut/Foundry-Markdown-Importer/total)
+![Downloads](https://img.shields.io/github/downloads/HadaIonut/Foundry-Markdown-Importer/v1.0.2/total?style=plastic)
 
 # Tetra-Cube Importer
 
