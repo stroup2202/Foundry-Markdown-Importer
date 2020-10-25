@@ -56,11 +56,21 @@ class ActorCreator {
      * @private
      */
     private _makeResistancesStructure(modifiers: object): object {
+        const conditionsDefault = ['blinded', 'charmed', 'deafened', 'diseased', 'exhaustion', 'frightened', 'grappled', 'incapacitated', 'invisible', 'paralyzed', 'petrified', 'poisoned', 'prone', 'restrained', 'stunned', 'unconscious'];
+        const defaultResistances = ['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder'];
         const structure = {};
         for (const key in modifiers) {
             if (!modifiers.hasOwnProperty(key)) continue;
+            const modifier = modifiers[key];
+            const standardRes = [];
+            const customRes = [];
+            modifier.split(', ').forEach((mod) => {
+                if (conditionsDefault.includes(mod) || defaultResistances.includes(mod)) standardRes.push(mod);
+                else customRes.push(mod);
+            })
             structure[MarkdownParser.convertResistance(key)] = {
-                custom: modifiers[key]
+                value: standardRes,
+                custom: customRes.join(';')
             }
         }
         return structure;
@@ -142,7 +152,7 @@ class ActorCreator {
      * @param propsRes - object that contains the resources from the parser
      * @private
      */
-    private _makeResourcesStructure(propsRes: any):object {
+    private _makeResourcesStructure(propsRes: any): object {
         return {
             legact: {
                 value: propsRes?.numberOfLegendaryActions,
@@ -205,22 +215,22 @@ class ActorCreator {
                 traits: {
                     size: sizeAndAlignment['size'],
                     languages: MarkdownParser.getLanguages(markdownText).toLocaleLowerCase(),
-                    senses : MarkdownParser.getSenses(markdownText),
-                    damageModifiers : MarkdownParser.getDamageModifiers(markdownText),
+                    senses: MarkdownParser.getSenses(markdownText),
+                    damageModifiers: MarkdownParser.getDamageModifiers(markdownText),
                 },
                 skills: {
-                   skills : MarkdownParser.getSkills(markdownText)
+                    skills: MarkdownParser.getSkills(markdownText)
                 },
                 resources: {
-                    numberOfLegendaryActions : MarkdownParser.getNumberOfLegendaryActions(markdownText),
+                    numberOfLegendaryActions: MarkdownParser.getNumberOfLegendaryActions(markdownText),
                     numberOfLegendaryResistances: MarkdownParser.getNumberOfLegendaryResistances(markdownText)
                 },
                 spellslots: MarkdownParser.getSpellSlots(markdownText)
             }
         }
         // @ts-ignore
-        props['proficiency'] = props['proficiency'] = Math.max(Math.floor((props?.data?.details?.challenge?.CR - 1) / 4) + 2, 2);
-        return props
+        props['proficiency'] = Math.max(Math.floor((props?.data?.details?.challenge?.CR - 1) / 4) + 2, 2);
+        return props;
     }
 
     public async actorCreator(markdownText: string) {
