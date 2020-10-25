@@ -77,6 +77,29 @@ class ActorCreator {
     }
 
     /**
+     * Returns a foundry friendly structure for languages
+     *
+     * @param languages - a string containing all the known languages of the actor
+     * @private
+     */
+    private _makeLanguagesStructure(languages: string) {
+        const defaultLanguages = ['Aarokocra', 'Abyssal', 'Aquan', 'Auran', 'Celestial', 'Common', 'Deep speech', 'Draconic', 'Druidic', 'Dwarvish', 'Elvish', 'Giant', 'Gith', 'Gnoll', 'Gnomish', 'Goblin', 'Halfling', 'Ignan', 'Infernal', 'Orc', 'Primordial', 'Sylvan', 'Terran', 'Cant', 'Undercommon'];
+
+        const languagesArray = languages.split(', ');
+        const standardLg = [];
+        const customLg = [];
+        languagesArray.forEach((language) => {
+            language = language[0].toLocaleUpperCase() + language.slice(1);
+            if (defaultLanguages.includes(language)) standardLg.push(language.toLowerCase());
+            else customLg.push(language);
+        })
+        return {
+            value: standardLg,
+            custom: customLg.join(';')
+        }
+    }
+
+    /**
      * Returns a foundry friendly structure for the traits part of the actor
      *
      * @private
@@ -86,9 +109,7 @@ class ActorCreator {
         return {
             ...this._makeResistancesStructure(propsTraits.damageModifiers),
             size: MarkdownParser.convertSizes(propsTraits.size),
-            languages: {
-                custom: propsTraits.languages
-            },
+            languages: this._makeLanguagesStructure(propsTraits.languages),
             senses: propsTraits.senses['vision']
         };
     }
