@@ -120,7 +120,7 @@ class MarkdownParser {
      * @param text - markdown text
      */
     public getCreatureHP(text: string): object {
-        const match = text.match(/ \*\*Hit Points\*\* ([0-9]+) \((.*?)\)/);
+        const match = text.match(/ \*\*Hit Points\*\* ([0-9]+)(?: \((.*?)\))?/);
         return {
             HP: match[1],
             formula: match[2]
