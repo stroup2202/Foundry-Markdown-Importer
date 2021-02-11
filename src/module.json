@@ -3,14 +3,14 @@
   "title": "Tetra-Cube Importer",
   "description": "Ever wanted to import a custom monster into Foundry? Well now you can, using the view markdown option of the Tetra-Cube monster creator you can import any creature that you create using normal syntax.",
   "author": "HadaIonut",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "esmodules": ["scripts/MarkdownImporter.js"],
   "styles": ["styles/Foundry-Markdown-Importer.css"],
   "minimumCoreVersion": "0.6.0",
   "compatibleCoreVersion": "0.7.5",
   "system": "dnd5e",
   "url": "https://github.com/HadaIonut/Foundry-Markdown-Importer",
-  "manifest": "https://github.com/HadaIonut/Foundry-Markdown-Importer/releases/download/v1.1.0/module.json",
-  "download": "https://github.com/HadaIonut/Foundry-Markdown-Importer/releases/download/v1.1.0/Tetra-CubeImporter.zip",
+  "manifest": "https://github.com/HadaIonut/Foundry-Markdown-Importer/releases/download/v1.1.1/module.json",
+  "download": "https://github.com/HadaIonut/Foundry-Markdown-Importer/releases/download/v1.1.1/Tetra-CubeImporter.zip",
   "changelog": ""
 }

@@ -11,7 +11,7 @@ class MarkdownParser {
 
     private _skillsToShortMap: { [key: string]: string } = {
         'Acrobatics': 'acr',
-        'Animal Handling': 'ani',
+        'Handling': 'ani',
         'Arcana': 'arc',
         'Athletics': 'ath',
         'Deception': 'dec',
@@ -25,7 +25,7 @@ class MarkdownParser {
         'Performance': 'prf',
         'Persuasion': 'per',
         'Religion': 'rel',
-        'Sleight of Hand': 'slt',
+        'Hand': 'slt',
         'Stealth': 'ste',
         'Survival': 'sur',
     };
