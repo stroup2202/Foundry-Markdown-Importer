@@ -24,10 +24,14 @@ class ActorCreator {
         const abilitiesObject = {}
         for (const stat in stats) {
             if (!stats.hasOwnProperty(stat)) continue;
+            const isProficient = saves ? saves[stat] ? 1 : 0 : 0;
+            const modifier = Math.floor((Number(stats[stat]) - 10) / 2)
             abilitiesObject[stat.toLowerCase()] = {
                 value: Number(stats[stat]),
-                proficient: saves ? saves[stat] ? 1 : 0 : 0,
-                prof: proficiency
+                proficient: isProficient,
+                prof: isProficient ? proficiency : 0,
+                mod: modifier,
+                save: isProficient ? modifier + proficiency : modifier
             };
         }
         return abilitiesObject
@@ -260,12 +264,8 @@ class ActorCreator {
         let actor = await Actor.create({
             name: props.name,
             type: "npc",
-            img: "",
             sort: 12000, //here to make it be last item in the list, not sure what 12000 means, i copy pasted this from somewhere
             data: this._makeDataStructure(props.data, props.proficiency, props.abilities, props.stats),
-            token: {},
-            items: [],
-            flags: {}
         }, {renderSheet: true});
 
         if (props.abilities) await ItemCreator.abilitiesAdder(actor, props.abilities, props.stats);

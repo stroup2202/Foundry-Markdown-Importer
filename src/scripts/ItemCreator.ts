@@ -59,7 +59,7 @@ class ItemCreator {
     private async _prepareSpellsArray(spells: Array<string>, compendium): Promise<Array<any>> {
         for (let spell of spells) {
             let index = spells.indexOf(spell);
-            spells[index] = await this._getEntityFromCompendium(compendium, spell.toLowerCase().trim());
+            spells[index] = JSON.parse(JSON.stringify(await this._getEntityFromCompendium(compendium, spell.toLowerCase().trim())));
         }
 
         return spells.filter(el=> el != null)
@@ -71,7 +71,7 @@ class ItemCreator {
      * @param spells - an object that contains all the spells
      * @private
      */
-    private async _prepareSpellsObject(spells: object): Promise<object> {
+    private async _prepareSpellsObject(spells: object) {
         const compendiums = await this._getCompendiums();
         let spellsArray = [];
         for (const key in spells) {
@@ -95,7 +95,7 @@ class ItemCreator {
         if (!spells) return;
         const spellList = await this._prepareSpellsObject(spells);
 
-        await actor.createEmbeddedEntity("OwnedItem", spellList);
+        await actor.createEmbeddedDocuments("Item", [...spellList]);
     }
 
     /**
@@ -194,7 +194,7 @@ class ItemCreator {
         }
         Object.assign(thisItem.data, this._makeRangeTargetStructure(itemData?.['data']?.['range']));
         try {
-            await actor.createEmbeddedEntity("OwnedItem", thisItem);
+            await actor.createEmbeddedDocuments("Item", [thisItem]);
         }
         catch (e) {
             Utilts.notificationCreator('error', `There has been an error while creating ${itemName}`)
