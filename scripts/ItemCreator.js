@@ -2,22 +2,13 @@ import MarkdownParser from "./MarkdownParser";
 import Utilts from "./Utilts";
 
 class ItemCreator {
-    private static _instance: ItemCreator;
-
-    private constructor() {
-    }
-
-    public static getInstance(): ItemCreator {
-        if (!ItemCreator._instance) ItemCreator._instance = new ItemCreator();
-        return ItemCreator._instance;
-    }
 
     /**
      * Returns an array of all the compendiums that have the identifier `spell` in their name
      *
      * @private
      */
-    private async _getCompendiums() {
+    async _getCompendiums() {
         const packKeys = game.packs.keys();
         const spellCompendiums = [];
         for (const key of packKeys) {
@@ -37,7 +28,7 @@ class ItemCreator {
      * @param spellName - name of the spell
      * @private
      */
-    private async _getEntityFromCompendium(compendiums, spellName) {
+    async _getEntityFromCompendium(compendiums, spellName) {
         for (const compendium of compendiums) {
             let entry = compendium.index.find(e => e.name.toLowerCase() === spellName);
             if (entry) {
@@ -56,7 +47,7 @@ class ItemCreator {
      * @param compendium - a compendium to get the entity structure from
      * @private
      */
-    private async _prepareSpellsArray(spells: Array<string>, compendium): Promise<Array<any>> {
+     async _prepareSpellsArray(spells, compendium) {
         for (let spell of spells) {
             let index = spells.indexOf(spell);
             spells[index] = JSON.parse(JSON.stringify(await this._getEntityFromCompendium(compendium, spell.toLowerCase().trim())));
@@ -71,7 +62,7 @@ class ItemCreator {
      * @param spells - an object that contains all the spells
      * @private
      */
-    private async _prepareSpellsObject(spells: object) {
+    async _prepareSpellsObject(spells) {
         const compendiums = await this._getCompendiums();
         let spellsArray = [];
         for (const key in spells) {
@@ -91,7 +82,7 @@ class ItemCreator {
      * @param actor - owner of the spells
      * @param spells - an array of spell names
      */
-    public async spellsAdder(actor: any, spells: object): Promise<void> {
+    async spellsAdder(actor, spells) {
         if (!spells) return;
         const spellList = await this._prepareSpellsObject(spells);
 
@@ -104,7 +95,7 @@ class ItemCreator {
      * @param abilityData - data of the ability currently being cleaned
      * @private
      */
-    private _cleanAbilityDamage(abilityData) {
+    _cleanAbilityDamage(abilityData) {
         if (!abilityData) return abilityData;
         abilityData.forEach((ability) => {
             ability.pop();
@@ -118,7 +109,7 @@ class ItemCreator {
      * @param abilityRange - ability.data.range data that came from the parser
      * @private
      */
-    private _makeRangeTargetStructure(abilityRange): object {
+    _makeRangeTargetStructure(abilityRange) {
         const structure = {};
         if (!abilityRange) return structure;
         if (abilityRange?.singleRange?.type) {
@@ -141,7 +132,7 @@ class ItemCreator {
      * @param actorStats - the stats of the actor
      * @private
      */
-    private _getAttackAbility(ability: any, actorStats: object): string {
+    _getAttackAbility(ability, actorStats) {
         if (!ability?.data?.damage?.[0]) return;
         for (const key in actorStats) {
             if (actorStats.hasOwnProperty(key))
@@ -156,7 +147,7 @@ class ItemCreator {
      * @param ability - ability to get the activation of
      * @private
      */
-    private _getActivation(ability: any): object {
+    _getActivation(ability) {
         const activationObject = {type: '', cost: 0, condition: ''};
         if (ability?.cost) {
             activationObject.type = 'legendary';
@@ -176,7 +167,7 @@ class ItemCreator {
      * @param itemData - data of the item from the parser
      * @param actorStats - stats of the actor
      */
-    public async itemCreator(actor: any, itemName: string, itemData: any, actorStats: object): Promise<void> {
+    async itemCreator(actor, itemName, itemData, actorStats) {
         let thisItem = {
             name: itemName,
             type: itemData?.data?.damage?.[0]?.[2] ? 'weapon' : 'feat',
@@ -209,7 +200,7 @@ class ItemCreator {
      * @param abilities - abilities object
      * @param actorStats - stats of the actor
      */
-    public async abilitiesAdder(actor: any, abilities: object, actorStats: object): Promise<void> {
+    async abilitiesAdder(actor, abilities, actorStats) {
         for (const key in abilities) {
             if (abilities.hasOwnProperty(key))
                 await this.itemCreator(actor, key, abilities[key], actorStats);

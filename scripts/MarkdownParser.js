@@ -1,15 +1,6 @@
 class MarkdownParser {
-    private static _instance: MarkdownParser;
 
-    private constructor() {
-    }
-
-    public static getInstance(): MarkdownParser {
-        if (!MarkdownParser._instance) MarkdownParser._instance = new MarkdownParser();
-        return MarkdownParser._instance;
-    }
-
-    private _skillsToShortMap: { [key: string]: string } = {
+    _skillsToShortMap = {
         'Acrobatics': 'acr',
         'Handling': 'ani',
         'Arcana': 'arc',
@@ -30,7 +21,7 @@ class MarkdownParser {
         'Survival': 'sur',
     };
 
-    private _sizesMap: { [key: string]: string } = {
+    _sizesMap = {
         "Gargantuan": "grg",
         "Large": "lg",
         "Huge": "huge",
@@ -39,14 +30,14 @@ class MarkdownParser {
         "Tiny": "tiny"
     }
 
-    private _resistanceMap: { [key: string]: string } = {
+    _resistanceMap = {
         "Damage Immunities": "di",
         "Damage Vulnerabilities": "dv",
         "Damage Resistances": "dr",
         "Condition Immunities": "ci"
     }
 
-    private _abilitiesMap: { [key: string]: string } = {
+    _abilitiesMap = {
         'Strength': 'str',
         'Dexterity': 'dex',
         'Constitution': 'con',
@@ -55,23 +46,23 @@ class MarkdownParser {
         "Charisma": 'cha'
     }
 
-    public shortenAbilities(ability: string): string {
+    shortenAbilities(ability) {
         return this._abilitiesMap[ability];
     }
 
-    public shortenSkills(skill: string): string {
+    shortenSkills(skill) {
         return this._skillsToShortMap[skill];
     }
 
-    public convertSizes(size: string): string {
+    convertSizes(size) {
         return this._sizesMap[size];
     }
 
-    public convertResistance(resistance: string): string {
+    convertResistance(resistance) {
         return this._resistanceMap[resistance];
     }
 
-    private _clearText(text: string): string {
+    _clearText(text) {
         text = text.replace(/_/g, '');
         return text;
     }
@@ -81,13 +72,13 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getCreatureName(text: string): string {
+    getCreatureName(text) {
         const match = text.match(/> ## (.+)/);
         if (!match) return;
         return match[1];
     }
 
-    public getCreatureSizeAndAlignment(text: string): object {
+    getCreatureSizeAndAlignment(text) {
         const match = text.match(/\*(\w+) (\w+).*, (.*?)\*/);
         if (!match) return;
         return {
@@ -104,7 +95,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getCreatureACAndSource(text: string): object {
+    getCreatureACAndSource(text) {
         const match = text.match(/ \*\*Armor Class\*\* ([0-9]+) ?(.*)?/);
         return {
             AC: match[1],
@@ -119,7 +110,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getCreatureHP(text: string): object {
+    getCreatureHP(text) {
         const match = text.match(/ \*\*Hit Points\*\* ([0-9]+)(?: \((.*?)\))?/);
         return {
             HP: match[1],
@@ -134,7 +125,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getCreatureSpeed(text: string): object {
+    getCreatureSpeed(text) {
         const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+ ft.),? ?(.*)?/);
         return {value: speedMatch[1], special: speedMatch[2]};
     }
@@ -146,7 +137,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getCreatureStats(text: string): object {
+    getCreatureStats(text) {
         const stats = [...text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g)];
         const updatedStats = {Str: 0, Dex: 0, Con: 0, Int: 0, Wis: 0, Cha: 0};
         stats.forEach((stat, index) => {
@@ -162,7 +153,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getSavingThrowMods(text: string): object {
+    getSavingThrowMods(text) {
         const savesObject = {};
         const match = text.match(/\*\*Saving Throws\*\* (.*)/);
         if (!match) return;
@@ -180,7 +171,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getSkills(text: string): object {
+    getSkills(text) {
         const skillsObject = {};
         const match = text.match(/\*\*Skills\*\* (.*)/);
         if (!match) return;
@@ -198,7 +189,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getDamageModifiers(text: string): object {
+    getDamageModifiers(text) {
         const modifiersObject = {}
         const damageMatch = [...text.matchAll(/\*\*(Damage \w+)\*\* (.*)/g)];
         const conditionMatch = [...text.matchAll(/\*\*(Condition Immunities)\*\* (.*)/g)]
@@ -218,7 +209,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getSenses(text: string): object {
+    getSenses(text) {
         const sensesObject = {};
         const match = [...text.match(/\*\*Senses\*\* ?(.*)?,? (passive Perception) ([0-9]+)/)];
         sensesObject["vision"] = match[1];
@@ -231,7 +222,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getLanguages(text: string): string {
+    getLanguages(text) {
         return [...text.match(/\*\*Languages\*\* (.*)/)][1];
     }
 
@@ -242,7 +233,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getChallenge(text: string): object {
+    getChallenge(text) {
         const match = text.match(/\*\*Challenge\*\* (([0-9]+\/[0-9]+)|([0-9]+)) \((.*) XP\)/)
         return {CR: eval(match[1]), XP: Number(match[4].replace(',', ''))};
     }
@@ -257,7 +248,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getAttackRange(text: string): object {
+    getAttackRange(text) {
         let singleRangeMatch = text.match(/ ([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/);
         let doubleRangeMatch = text.match(/ ([0-9]+)\/([0-9]+) (\w+)/);
         const rangeObject = {
@@ -286,7 +277,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getAttackDamage(text: string): object {
+    getAttackDamage(text) {
         const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( ?[+-] ?([0-9]+))?\) (\w+) damage/g)];
         const attackObject = [];
         match.forEach((attack) => {
@@ -302,7 +293,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getAttackSave(text: string): object {
+    getAttackSave(text) {
         let match = text.match(/DC ([0-9]+) (\w+)/);
         if (!match) return;
         const saveObject = {};
@@ -316,7 +307,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getAttackHit(text: string): number {
+    getAttackHit(text) {
         const match = text.match(/([+-] ?[0-9]+) to hit/)
         if (match) return Number(match[1].replace(' ', ''));
         return;
@@ -329,7 +320,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getAttack(text: string): object {
+    getAttack(text) {
         const attackObject = {};
         attackObject['damage'] = this.getAttackDamage(text);
         attackObject['range'] = this.getAttackRange(text);
@@ -346,7 +337,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getSpellcastingStats(text: string): object {
+    getSpellcastingStats(text) {
         const spellcastingLevel = [...text.match(/([0-9]+)\w{1,2}-level spellcaster/)];
         const spellcastingModifier = [...text.match(/spellcasting ability is (\w+)/)];
         return {level: Number(spellcastingLevel[1]), modifier: spellcastingModifier[1]};
@@ -361,7 +352,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getAbilities(text: string): object {
+    getAbilities(text) {
         const match = [...text.matchAll(/\*\*\*(.*?)\.\*\*\* (.*)/g)];
         const extraMatch = [...text.matchAll(/(&nbsp;)+\*\*(.*?)\.\*\* (.*)/g)];
         const abilitiesObject = {};
@@ -394,7 +385,7 @@ class MarkdownParser {
      *
      * @param text
      */
-    public getLegendaryActions(text: string): object {
+    getLegendaryActions(text) {
         const match = [...text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g)];
 
         const actionObject = {};
@@ -416,7 +407,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getNumberOfLegendaryActions(text: string): number {
+    getNumberOfLegendaryActions(text) {
         const legendaryActionDescription = text.match(/> .* can take ([0-9]+) legendary actions, .*/);
 
         return Number(legendaryActionDescription?.[1]);
@@ -427,7 +418,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getNumberOfLegendaryResistances(text: string): number {
+    getNumberOfLegendaryResistances(text) {
         const legendaryRes = text.match(/> \*\*\*Legendary Resistance \(([0-9]+)\/Day\)\.\*\*\*/);
 
         return Number(legendaryRes?.[1]);
@@ -441,7 +432,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getSpells(text: string): object {
+    getSpells(text) {
         const matchedSpells = [...text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g)];
         const spellsObject = {};
         matchedSpells.forEach((spell) => {
@@ -456,7 +447,7 @@ class MarkdownParser {
      *
      * @param text - markdown text
      */
-    public getSpellSlots(text: string): object {
+    getSpellSlots(text) {
         const matchedSlots = [...text.matchAll(/([0-9]+)\w{1,2} level \(([0-9]+) slots?\)/g)];
         const slotsObject = {}
         matchedSlots.forEach((slot)=>{
@@ -474,7 +465,7 @@ class MarkdownParser {
      *
      * @param abilities - an object of all the creatures abilities
      */
-    public getProficiency(abilities: object): number {
+    getProficiency(abilities) {
         for (const key in abilities) {
             if (!abilities.hasOwnProperty(key)) continue;
             if (abilities[key]?.data?.hit && abilities[key]?.data?.damage?.[0]?.[2])
@@ -488,7 +479,7 @@ class MarkdownParser {
      *
      * @param abilityScore - ability score, example 20 -> returns +5
      */
-    public getAbilityModifier(abilityScore: number): number {
+    getAbilityModifier(abilityScore) {
         return Math.floor(abilityScore / 2 - 5);
     }
 }

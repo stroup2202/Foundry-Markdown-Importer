@@ -2,17 +2,7 @@ import MarkdownParser from "./MarkdownParser";
 import ItemCreator from "./ItemCreator";
 
 class ActorCreator {
-    private static _instance: ActorCreator;
-
-    private constructor() {
-    }
-
-    public static getInstance(): ActorCreator {
-        if (!ActorCreator._instance) ActorCreator._instance = new ActorCreator();
-        return ActorCreator._instance;
-    }
-
-    /**
+        /**
      * Returns the foundry friendly structure for the ability scores
      *
      * @param stats - ability scores
@@ -20,7 +10,7 @@ class ActorCreator {
      * @param proficiency - proficiency score
      * @private
      */
-    private _makeAbilitiesStructure(stats: object, saves: object, proficiency: number): object {
+    _makeAbilitiesStructure(stats, saves, proficiency) {
         const abilitiesObject = {}
         for (const stat in stats) {
             if (!stats.hasOwnProperty(stat)) continue;
@@ -44,7 +34,7 @@ class ActorCreator {
      * @param proficiency - proficiency score
      * @private
      */
-    private _makeSkillsStructure(propSkills: any, proficiency: number): object {
+    _makeSkillsStructure(propSkills, proficiency) {
         const skillsObject = {};
         for (const skill in propSkills.skills) {
             if (!propSkills.skills.hasOwnProperty(skill)) continue;
@@ -59,7 +49,7 @@ class ActorCreator {
      * @param modifiers - an object with all the damage modifiers of the creature
      * @private
      */
-    private _makeResistancesStructure(modifiers: object): object {
+    _makeResistancesStructure(modifiers) {
         const conditionsDefault = ['blinded', 'charmed', 'deafened', 'diseased', 'exhaustion', 'frightened', 'grappled', 'incapacitated', 'invisible', 'paralyzed', 'petrified', 'poisoned', 'prone', 'restrained', 'stunned', 'unconscious'];
         const defaultResistances = ['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder'];
         const structure = {};
@@ -86,7 +76,7 @@ class ActorCreator {
      * @param languages - a string containing all the known languages of the actor
      * @private
      */
-    private _makeLanguagesStructure(languages: string) {
+    _makeLanguagesStructure(languages) {
         const defaultLanguages = ['Aarokocra', 'Abyssal', 'Aquan', 'Auran', 'Celestial', 'Common', 'Deep speech', 'Draconic', 'Druidic', 'Dwarvish', 'Elvish', 'Giant', 'Gith', 'Gnoll', 'Gnomish', 'Goblin', 'Halfling', 'Ignan', 'Infernal', 'Orc', 'Primordial', 'Sylvan', 'Terran', 'Cant', 'Undercommon'];
 
         const languagesArray = languages.split(', ');
@@ -109,7 +99,7 @@ class ActorCreator {
      * @private
      * @param propsTraits - object containing all the traits data extracted from the parser
      */
-    private _makeTraitsStructure(propsTraits: any): object {
+    _makeTraitsStructure(propsTraits) {
         return {
             ...this._makeResistancesStructure(propsTraits.damageModifiers),
             size: MarkdownParser.convertSizes(propsTraits.size),
@@ -125,7 +115,7 @@ class ActorCreator {
      * @param abilities - object structure of all abilities to get the spellcasting level if needed
      * @private
      */
-    private _makeDetailsStructure(propsDetails: any, abilities): object {
+    _makeDetailsStructure(propsDetails, abilities) {
         return {
             alignment: propsDetails.alignment,
             type: propsDetails.race,
@@ -143,7 +133,7 @@ class ActorCreator {
      * @private
      * @param propsHP - object that contains all the hp data extracted from markdown
      */
-    private _makeHpStructure(propsHP: any): object {
+    _makeHpStructure(propsHP) {
         return {
             value: Number(propsHP['HP']),
             max: Number(propsHP['HP']),
@@ -159,7 +149,7 @@ class ActorCreator {
      * @param abilities - abilities object for extracting the spellcaster abilities of the creature
      * @private
      */
-    private _makeAttributesStructure(propsAttributes: any, creatureProficiency: number, abilities): object {
+    _makeAttributesStructure(propsAttributes, creatureProficiency, abilities) {
         return {
             ac: {
                 value: Number(propsAttributes.armor['AC'])
@@ -177,7 +167,7 @@ class ActorCreator {
      * @param propsRes - object that contains the resources from the parser
      * @private
      */
-    private _makeResourcesStructure(propsRes: any): object {
+    _makeResourcesStructure(propsRes) {
         return {
             legact: {
                 value: propsRes?.numberOfLegendaryActions,
@@ -199,7 +189,7 @@ class ActorCreator {
      * @param creatureStats - stats of the actor
      * @private
      */
-    private _makeDataStructure(propsData: any, creatureProficiency: number, creatureAbilities: object, creatureStats: object): object {
+    _makeDataStructure(propsData, creatureProficiency, creatureAbilities, creatureStats) {
         return {
             abilities: this._makeAbilitiesStructure(creatureStats, propsData.savingThrowMods, creatureProficiency),
             attributes: this._makeAttributesStructure(propsData.attributes, creatureProficiency, creatureAbilities),
@@ -217,7 +207,7 @@ class ActorCreator {
      * @param markdownText - input text
      * @private
      */
-    private _makeProps(markdownText: string): any {
+    _makeProps(markdownText) {
         const sizeAndAlignment = MarkdownParser.getCreatureSizeAndAlignment(markdownText);
         const props = {
             name: MarkdownParser.getCreatureName(markdownText),
@@ -258,7 +248,7 @@ class ActorCreator {
         return props;
     }
 
-    public async actorCreator(markdownText: string) {
+    async actorCreator(markdownText) {
         const props = this._makeProps(markdownText);
 
         let actor = await Actor.create({

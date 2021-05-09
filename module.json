@@ -8,7 +8,7 @@
   "styles": ["styles/Foundry-Markdown-Importer.css"],
   "minimumCoreVersion": "0.8.0",
   "compatibleCoreVersion": "0.8.0",
-  "system": "dnd5e",
+  "system": ["dnd5e"],
   "url": "https://github.com/HadaIonut/Foundry-Markdown-Importer",
   "manifest": "https://github.com/HadaIonut/Foundry-Markdown-Importer/releases/download/v1.2.0/module.json",
   "download": "https://github.com/HadaIonut/Foundry-Markdown-Importer/releases/download/v1.2.0/Tetra-CubeImporter.zip",
