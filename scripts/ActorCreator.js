@@ -1,268 +1,288 @@
-import MarkdownParser from "./MarkdownParser";
-import ItemCreator from "./ItemCreator";
+import {abilitiesAdder, spellsAdder} from "./ItemCreator.js";
+import {
+    shortenSkills,
+    convertResistance,
+    convertSizes,
+    shortenAbilities,
+    getCreatureSizeAndAlignment,
+    getCreatureName,
+    getAbilities,
+    getLegendaryActions,
+    getSpells,
+    getCreatureStats,
+    getSavingThrowMods,
+    getCreatureACAndSource,
+    getCreatureSpeed,
+    getCreatureHP,
+    getChallenge,
+    getLanguages,
+    getSenses,
+    getDamageModifiers,
+    getSkills,
+    getNumberOfLegendaryActions,
+    getNumberOfLegendaryResistances,
+    getSpellSlots
+} from "./MarkdownParser.js";
 
-class ActorCreator {
-        /**
-     * Returns the foundry friendly structure for the ability scores
-     *
-     * @param stats - ability scores
-     * @param saves - saves (used to decide if the creatures is proficient in a stat or not
-     * @param proficiency - proficiency score
-     * @private
-     */
-    _makeAbilitiesStructure(stats, saves, proficiency) {
-        const abilitiesObject = {}
-        for (const stat in stats) {
-            if (!stats.hasOwnProperty(stat)) continue;
-            const isProficient = saves ? saves[stat] ? 1 : 0 : 0;
-            const modifier = Math.floor((Number(stats[stat]) - 10) / 2)
-            abilitiesObject[stat.toLowerCase()] = {
-                value: Number(stats[stat]),
-                proficient: isProficient,
-                prof: isProficient ? proficiency : 0,
-                mod: modifier,
-                save: isProficient ? modifier + proficiency : modifier
-            };
-        }
-        return abilitiesObject
-    }
 
-    /**
-     * Returns the foundry friendly structure for skills
-     *
-     * @param propSkills - object containing all the skills data from the parser
-     * @param proficiency - proficiency score
-     * @private
-     */
-    _makeSkillsStructure(propSkills, proficiency) {
-        const skillsObject = {};
-        for (const skill in propSkills.skills) {
-            if (!propSkills.skills.hasOwnProperty(skill)) continue;
-            skillsObject[MarkdownParser.shortenSkills(skill)] = {value: Math.floor(propSkills.skills[skill] / proficiency)};
-        }
-        return skillsObject
-    }
-
-    /**
-     * Returns a foundry friendly structure for resistances
-     *
-     * @param modifiers - an object with all the damage modifiers of the creature
-     * @private
-     */
-    _makeResistancesStructure(modifiers) {
-        const conditionsDefault = ['blinded', 'charmed', 'deafened', 'diseased', 'exhaustion', 'frightened', 'grappled', 'incapacitated', 'invisible', 'paralyzed', 'petrified', 'poisoned', 'prone', 'restrained', 'stunned', 'unconscious'];
-        const defaultResistances = ['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder'];
-        const structure = {};
-        for (const key in modifiers) {
-            if (!modifiers.hasOwnProperty(key)) continue;
-            const modifier = modifiers[key];
-            const standardRes = [];
-            const customRes = [];
-            modifier.split(', ').forEach((mod) => {
-                if (conditionsDefault.includes(mod) || defaultResistances.includes(mod)) standardRes.push(mod);
-                else customRes.push(mod);
-            })
-            structure[MarkdownParser.convertResistance(key)] = {
-                value: standardRes,
-                custom: customRes.join(';')
-            }
-        }
-        return structure;
-    }
-
-    /**
-     * Returns a foundry friendly structure for languages
-     *
-     * @param languages - a string containing all the known languages of the actor
-     * @private
-     */
-    _makeLanguagesStructure(languages) {
-        const defaultLanguages = ['Aarokocra', 'Abyssal', 'Aquan', 'Auran', 'Celestial', 'Common', 'Deep speech', 'Draconic', 'Druidic', 'Dwarvish', 'Elvish', 'Giant', 'Gith', 'Gnoll', 'Gnomish', 'Goblin', 'Halfling', 'Ignan', 'Infernal', 'Orc', 'Primordial', 'Sylvan', 'Terran', 'Cant', 'Undercommon'];
-
-        const languagesArray = languages.split(', ');
-        const standardLg = [];
-        const customLg = [];
-        languagesArray.forEach((language) => {
-            language = language[0].toLocaleUpperCase() + language.slice(1);
-            if (defaultLanguages.includes(language)) standardLg.push(language.toLowerCase());
-            else customLg.push(language);
-        })
-        return {
-            value: standardLg,
-            custom: customLg.join(';')
-        }
-    }
-
-    /**
-     * Returns a foundry friendly structure for the traits part of the actor
-     *
-     * @private
-     * @param propsTraits - object containing all the traits data extracted from the parser
-     */
-    _makeTraitsStructure(propsTraits) {
-        return {
-            ...this._makeResistancesStructure(propsTraits.damageModifiers),
-            size: MarkdownParser.convertSizes(propsTraits.size),
-            languages: this._makeLanguagesStructure(propsTraits.languages),
-            senses: propsTraits.senses['vision']
+/**
+ * Returns the foundry friendly structure for the ability scores
+ *
+ * @param stats - ability scores
+ * @param saves - saves (used to decide if the creatures is proficient in a stat or not
+ * @param proficiency - proficiency score
+ * @private
+ */
+const _makeAbilitiesStructure = (stats, saves, proficiency) => {
+    const abilitiesObject = {}
+    for (const stat in stats) {
+        if (!stats.hasOwnProperty(stat)) continue;
+        const isProficient = saves ? saves[stat] ? 1 : 0 : 0;
+        const modifier = Math.floor((Number(stats[stat]) - 10) / 2)
+        abilitiesObject[stat.toLowerCase()] = {
+            value: Number(stats[stat]),
+            proficient: isProficient,
+            prof: isProficient ? proficiency : 0,
+            mod: modifier,
+            save: isProficient ? modifier + proficiency : modifier
         };
     }
-
-    /**
-     * Returns a foundry friendly structure for the details part
-     *
-     * @param propsDetails - object containing all the details data from the parser
-     * @param abilities - object structure of all abilities to get the spellcasting level if needed
-     * @private
-     */
-    _makeDetailsStructure(propsDetails, abilities) {
-        return {
-            alignment: propsDetails.alignment,
-            type: propsDetails.race,
-            cr: propsDetails.challenge['CR'],
-            xp: {
-                value: propsDetails.challenge['XP']
-            },
-            spellLevel: abilities?.Spellcasting?.data?.level
-        };
-    }
-
-    /**
-     * Returns a foundry friendly structure for the HP
-     *
-     * @private
-     * @param propsHP - object that contains all the hp data extracted from markdown
-     */
-    _makeHpStructure(propsHP) {
-        return {
-            value: Number(propsHP['HP']),
-            max: Number(propsHP['HP']),
-            formula: propsHP['formula']
-        };
-    }
-
-    /**
-     * Returns a foundry friendly structure for the attributes tab
-     *
-     * @param propsAttributes - object containing all the attributes extracted from markdown
-     * @param creatureProficiency - creature's proficiency modifier
-     * @param abilities - abilities object for extracting the spellcaster abilities of the creature
-     * @private
-     */
-    _makeAttributesStructure(propsAttributes, creatureProficiency, abilities) {
-        return {
-            ac: {
-                value: Number(propsAttributes.armor['AC'])
-            },
-            hp: this._makeHpStructure(propsAttributes.hp),
-            speed: propsAttributes.speed,
-            prof: creatureProficiency,
-            spellcasting: MarkdownParser.shortenAbilities(abilities?.Spellcasting?.data?.modifier)
-        };
-    }
-
-    /**
-     * Returns the resources structure
-     *
-     * @param propsRes - object that contains the resources from the parser
-     * @private
-     */
-    _makeResourcesStructure(propsRes) {
-        return {
-            legact: {
-                value: propsRes?.numberOfLegendaryActions,
-                max: propsRes?.numberOfLegendaryActions
-            },
-            legres: {
-                value: propsRes?.numberOfLegendaryResistances,
-                max: propsRes?.numberOfLegendaryResistances
-            }
-        }
-    }
-
-    /**
-     * Returns a foundry friendly structure for the data field of the actor
-     *
-     * @param propsData - an object that contains all the data extracted from the parser
-     * @param creatureProficiency - proficiency of the actor
-     * @param creatureAbilities - abilities object of the actor
-     * @param creatureStats - stats of the actor
-     * @private
-     */
-    _makeDataStructure(propsData, creatureProficiency, creatureAbilities, creatureStats) {
-        return {
-            abilities: this._makeAbilitiesStructure(creatureStats, propsData.savingThrowMods, creatureProficiency),
-            attributes: this._makeAttributesStructure(propsData.attributes, creatureProficiency, creatureAbilities),
-            details: this._makeDetailsStructure(propsData.details, creatureAbilities),
-            traits: this._makeTraitsStructure(propsData.traits),
-            skills: this._makeSkillsStructure(propsData.skills, creatureProficiency),
-            resources: this._makeResourcesStructure(propsData.resources),
-            spells: propsData.spellslots
-        };
-    }
-
-    /**
-     * Returns an object of all the data parsed
-     *
-     * @param markdownText - input text
-     * @private
-     */
-    _makeProps(markdownText) {
-        const sizeAndAlignment = MarkdownParser.getCreatureSizeAndAlignment(markdownText);
-        const props = {
-            name: MarkdownParser.getCreatureName(markdownText),
-            abilities: MarkdownParser.getAbilities(markdownText),
-            legendaryActions: MarkdownParser.getLegendaryActions(markdownText),
-            spells: MarkdownParser.getSpells(markdownText),
-            stats: MarkdownParser.getCreatureStats(markdownText),
-            data: {
-                savingThrowMods: MarkdownParser.getSavingThrowMods(markdownText),
-                attributes: {
-                    armor: MarkdownParser.getCreatureACAndSource(markdownText),
-                    speed: MarkdownParser.getCreatureSpeed(markdownText),
-                    hp: MarkdownParser.getCreatureHP(markdownText)
-                },
-                details: {
-                    alignment: sizeAndAlignment['alignment'],
-                    race: sizeAndAlignment['race'],
-                    challenge: MarkdownParser.getChallenge(markdownText)
-                },
-                traits: {
-                    size: sizeAndAlignment['size'],
-                    languages: MarkdownParser.getLanguages(markdownText).toLocaleLowerCase(),
-                    senses: MarkdownParser.getSenses(markdownText),
-                    damageModifiers: MarkdownParser.getDamageModifiers(markdownText),
-                },
-                skills: {
-                    skills: MarkdownParser.getSkills(markdownText)
-                },
-                resources: {
-                    numberOfLegendaryActions: MarkdownParser.getNumberOfLegendaryActions(markdownText),
-                    numberOfLegendaryResistances: MarkdownParser.getNumberOfLegendaryResistances(markdownText)
-                },
-                spellslots: MarkdownParser.getSpellSlots(markdownText)
-            }
-        }
-        // @ts-ignore
-        props['proficiency'] = Math.max(Math.floor((props?.data?.details?.challenge?.CR - 1) / 4) + 2, 2);
-        return props;
-    }
-
-    async actorCreator(markdownText) {
-        const props = this._makeProps(markdownText);
-
-        let actor = await Actor.create({
-            name: props.name,
-            type: "npc",
-            sort: 12000, //here to make it be last item in the list, not sure what 12000 means, i copy pasted this from somewhere
-            data: this._makeDataStructure(props.data, props.proficiency, props.abilities, props.stats),
-        }, {renderSheet: true});
-
-        if (props.abilities) await ItemCreator.abilitiesAdder(actor, props.abilities, props.stats);
-        if (props.legendaryActions) await ItemCreator.abilitiesAdder(actor, props.legendaryActions, props.stats);
-        if (props.spells) await ItemCreator.spellsAdder(actor, props.spells);
-    }
-
+    return abilitiesObject
 }
 
-export default ActorCreator.getInstance();
+/**
+ * Returns the foundry friendly structure for skills
+ *
+ * @param propSkills - object containing all the skills data from the parser
+ * @param proficiency - proficiency score
+ * @private
+ */
+const _makeSkillsStructure = (propSkills, proficiency) => {
+    const skillsObject = {};
+    for (const skill in propSkills.skills) {
+        if (!propSkills.skills.hasOwnProperty(skill)) continue;
+        skillsObject[shortenSkills(skill)] = {value: Math.floor(propSkills.skills[skill] / proficiency)};
+    }
+    return skillsObject
+}
+
+/**
+ * Returns a foundry friendly structure for resistances
+ *
+ * @param modifiers - an object with all the damage modifiers of the creature
+ * @private
+ */
+const _makeResistancesStructure = (modifiers) => {
+    const conditionsDefault = ['blinded', 'charmed', 'deafened', 'diseased', 'exhaustion', 'frightened', 'grappled', 'incapacitated', 'invisible', 'paralyzed', 'petrified', 'poisoned', 'prone', 'restrained', 'stunned', 'unconscious'];
+    const defaultResistances = ['acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder'];
+    const structure = {};
+    for (const key in modifiers) {
+        if (!modifiers.hasOwnProperty(key)) continue;
+        const modifier = modifiers[key];
+        const standardRes = [];
+        const customRes = [];
+        modifier.split(', ').forEach((mod) => {
+            if (conditionsDefault.includes(mod) || defaultResistances.includes(mod)) standardRes.push(mod);
+            else customRes.push(mod);
+        })
+        structure[convertResistance(key)] = {
+            value: standardRes,
+            custom: customRes.join(';')
+        }
+    }
+    return structure;
+}
+
+/**
+ * Returns a foundry friendly structure for languages
+ *
+ * @param languages - a string containing all the known languages of the actor
+ * @private
+ */
+const _makeLanguagesStructure = (languages) => {
+    const defaultLanguages = ['Aarokocra', 'Abyssal', 'Aquan', 'Auran', 'Celestial', 'Common', 'Deep speech', 'Draconic', 'Druidic', 'Dwarvish', 'Elvish', 'Giant', 'Gith', 'Gnoll', 'Gnomish', 'Goblin', 'Halfling', 'Ignan', 'Infernal', 'Orc', 'Primordial', 'Sylvan', 'Terran', 'Cant', 'Undercommon'];
+
+    const languagesArray = languages.split(', ');
+    const standardLg = [];
+    const customLg = [];
+    languagesArray.forEach((language) => {
+        language = language[0].toLocaleUpperCase() + language.slice(1);
+        if (defaultLanguages.includes(language)) standardLg.push(language.toLowerCase());
+        else customLg.push(language);
+    })
+    return {
+        value: standardLg,
+        custom: customLg.join(';')
+    }
+}
+
+/**
+ * Returns a foundry friendly structure for the traits part of the actor
+ *
+ * @private
+ * @param propsTraits - object containing all the traits data extracted from the parser
+ */
+const _makeTraitsStructure = (propsTraits) => {
+    return {
+        ..._makeResistancesStructure(propsTraits.damageModifiers),
+        size: convertSizes(propsTraits.size),
+        languages: _makeLanguagesStructure(propsTraits.languages),
+        senses: propsTraits.senses['vision']
+    };
+}
+
+/**
+ * Returns a foundry friendly structure for the details part
+ *
+ * @param propsDetails - object containing all the details data from the parser
+ * @param abilities - object structure of all abilities to get the spellcasting level if needed
+ * @private
+ */
+const _makeDetailsStructure = (propsDetails, abilities) => {
+    return {
+        alignment: propsDetails.alignment,
+        type: propsDetails.race,
+        cr: propsDetails.challenge['CR'],
+        xp: {
+            value: propsDetails.challenge['XP']
+        },
+        spellLevel: abilities?.Spellcasting?.data?.level
+    };
+}
+
+/**
+ * Returns a foundry friendly structure for the HP
+ *
+ * @private
+ * @param propsHP - object that contains all the hp data extracted from markdown
+ */
+const _makeHpStructure = (propsHP) => {
+    return {
+        value: Number(propsHP['HP']),
+        max: Number(propsHP['HP']),
+        formula: propsHP['formula']
+    };
+}
+
+/**
+ * Returns a foundry friendly structure for the attributes tab
+ *
+ * @param propsAttributes - object containing all the attributes extracted from markdown
+ * @param creatureProficiency - creature's proficiency modifier
+ * @param abilities - abilities object for extracting the spellcaster abilities of the creature
+ * @private
+ */
+const _makeAttributesStructure = (propsAttributes, creatureProficiency, abilities) => {
+    return {
+        ac: {
+            value: Number(propsAttributes.armor['AC'])
+        },
+        hp: _makeHpStructure(propsAttributes.hp),
+        speed: propsAttributes.speed,
+        prof: creatureProficiency,
+        spellcasting: shortenAbilities(abilities?.Spellcasting?.data?.modifier)
+    };
+}
+
+/**
+ * Returns the resources structure
+ *
+ * @param propsRes - object that contains the resources from the parser
+ * @private
+ */
+const _makeResourcesStructure = (propsRes) => {
+    return {
+        legact: {
+            value: propsRes?.numberOfLegendaryActions,
+            max: propsRes?.numberOfLegendaryActions
+        },
+        legres: {
+            value: propsRes?.numberOfLegendaryResistances,
+            max: propsRes?.numberOfLegendaryResistances
+        }
+    }
+}
+
+/**
+ * Returns a foundry friendly structure for the data field of the actor
+ *
+ * @param propsData - an object that contains all the data extracted from the parser
+ * @param creatureProficiency - proficiency of the actor
+ * @param creatureAbilities - abilities object of the actor
+ * @param creatureStats - stats of the actor
+ * @private
+ */
+const _makeDataStructure = (propsData, creatureProficiency, creatureAbilities, creatureStats) => {
+    return {
+        abilities: _makeAbilitiesStructure(creatureStats, propsData.savingThrowMods, creatureProficiency),
+        attributes: _makeAttributesStructure(propsData.attributes, creatureProficiency, creatureAbilities),
+        details: _makeDetailsStructure(propsData.details, creatureAbilities),
+        traits: _makeTraitsStructure(propsData.traits),
+        skills: _makeSkillsStructure(propsData.skills, creatureProficiency),
+        resources: _makeResourcesStructure(propsData.resources),
+        spells: propsData.spellslots
+    };
+}
+
+/**
+ * Returns an object of all the data parsed
+ *
+ * @param markdownText - input text
+ * @private
+ */
+const _makeProps = (markdownText) => {
+    const sizeAndAlignment = getCreatureSizeAndAlignment(markdownText);
+    const props = {
+        name: getCreatureName(markdownText),
+        abilities: getAbilities(markdownText),
+        legendaryActions: getLegendaryActions(markdownText),
+        spells: getSpells(markdownText),
+        stats: getCreatureStats(markdownText),
+        data: {
+            savingThrowMods: getSavingThrowMods(markdownText),
+            attributes: {
+                armor: getCreatureACAndSource(markdownText),
+                speed: getCreatureSpeed(markdownText),
+                hp: getCreatureHP(markdownText)
+            },
+            details: {
+                alignment: sizeAndAlignment['alignment'],
+                race: sizeAndAlignment['race'],
+                challenge: getChallenge(markdownText)
+            },
+            traits: {
+                size: sizeAndAlignment['size'],
+                languages: getLanguages(markdownText).toLocaleLowerCase(),
+                senses: getSenses(markdownText),
+                damageModifiers: getDamageModifiers(markdownText),
+            },
+            skills: {
+                skills: getSkills(markdownText)
+            },
+            resources: {
+                numberOfLegendaryActions: getNumberOfLegendaryActions(markdownText),
+                numberOfLegendaryResistances: getNumberOfLegendaryResistances(markdownText)
+            },
+            spellslots: getSpellSlots(markdownText)
+        }
+    }
+    props['proficiency'] = Math.max(Math.floor((props?.data?.details?.challenge?.CR - 1) / 4) + 2, 2);
+    return props;
+}
+
+const actorCreator = async (markdownText) => {
+    const props = _makeProps(markdownText);
+
+    let actor = await Actor.create({
+        name: props.name,
+        type: "npc",
+        sort: 12000,
+        data: _makeDataStructure(props.data, props.proficiency, props.abilities, props.stats),
+    }, {renderSheet: true});
+
+    if (props.abilities) await abilitiesAdder(actor, props.abilities, props.stats);
+    if (props.legendaryActions) await abilitiesAdder(actor, props.legendaryActions, props.stats);
+    if (props.spells) await spellsAdder(actor, props.spells);
+}
+
+export {actorCreator}

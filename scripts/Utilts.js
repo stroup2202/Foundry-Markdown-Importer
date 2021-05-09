@@ -1,7 +1,6 @@
-class Utilts {
-    notificationCreator(type, message) {
-        ui.notifications[type](message);
-    }
+const notificationCreator = (type, message) => {
+    ui.notifications[type](message);
 }
 
-export default Utilts.getInstance();
+
+export {notificationCreator}

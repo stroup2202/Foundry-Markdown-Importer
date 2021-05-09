@@ -1,487 +1,495 @@
-class MarkdownParser {
+const _skillsToShortMap = {
+    'Acrobatics': 'acr',
+    'Handling': 'ani',
+    'Arcana': 'arc',
+    'Athletics': 'ath',
+    'Deception': 'dec',
+    'History': 'his',
+    'Insight': 'ins',
+    'Intimidation': 'itm',
+    'Investigation': 'inv',
+    'Medicine': 'med',
+    'Nature': 'nat',
+    'Perception': 'prc',
+    'Performance': 'prf',
+    'Persuasion': 'per',
+    'Religion': 'rel',
+    'Hand': 'slt',
+    'Stealth': 'ste',
+    'Survival': 'sur',
+};
 
-    _skillsToShortMap = {
-        'Acrobatics': 'acr',
-        'Handling': 'ani',
-        'Arcana': 'arc',
-        'Athletics': 'ath',
-        'Deception': 'dec',
-        'History': 'his',
-        'Insight': 'ins',
-        'Intimidation': 'itm',
-        'Investigation': 'inv',
-        'Medicine': 'med',
-        'Nature': 'nat',
-        'Perception': 'prc',
-        'Performance': 'prf',
-        'Persuasion': 'per',
-        'Religion': 'rel',
-        'Hand': 'slt',
-        'Stealth': 'ste',
-        'Survival': 'sur',
-    };
+const _sizesMap = {
+    "Gargantuan": "grg",
+    "Large": "lg",
+    "Huge": "huge",
+    "Medium": "med",
+    "Small": "sm",
+    "Tiny": "tiny"
+}
 
-    _sizesMap = {
-        "Gargantuan": "grg",
-        "Large": "lg",
-        "Huge": "huge",
-        "Medium": "med",
-        "Small": "sm",
-        "Tiny": "tiny"
-    }
+const _resistanceMap = {
+    "Damage Immunities": "di",
+    "Damage Vulnerabilities": "dv",
+    "Damage Resistances": "dr",
+    "Condition Immunities": "ci"
+}
 
-    _resistanceMap = {
-        "Damage Immunities": "di",
-        "Damage Vulnerabilities": "dv",
-        "Damage Resistances": "dr",
-        "Condition Immunities": "ci"
-    }
+const _abilitiesMap = {
+    'Strength': 'str',
+    'Dexterity': 'dex',
+    'Constitution': 'con',
+    'Intelligence': 'int',
+    "Wisdom": 'wis',
+    "Charisma": 'cha'
+}
 
-    _abilitiesMap = {
-        'Strength': 'str',
-        'Dexterity': 'dex',
-        'Constitution': 'con',
-        'Intelligence': 'int',
-        "Wisdom": 'wis',
-        "Charisma": 'cha'
-    }
+const shortenAbilities = (ability) => _abilitiesMap[ability];
 
-    shortenAbilities(ability) {
-        return this._abilitiesMap[ability];
-    }
+const shortenSkills = (skill) => _skillsToShortMap[skill];
 
-    shortenSkills(skill) {
-        return this._skillsToShortMap[skill];
-    }
+const convertSizes = (size) => _sizesMap[size];
 
-    convertSizes(size) {
-        return this._sizesMap[size];
-    }
+const convertResistance = (resistance) => _resistanceMap[resistance];
 
-    convertResistance(resistance) {
-        return this._resistanceMap[resistance];
-    }
+const _clearText = (text) => {
+    text = text.replace(/_/g, '');
+    return text;
+}
 
-    _clearText(text) {
-        text = text.replace(/_/g, '');
-        return text;
-    }
+/**
+ * Returns a creature's name
+ *
+ * @param text - markdown text
+ */
+const getCreatureName = (text) => {
+    const match = text.match(/> ## (.+)/);
+    if (!match) return;
+    return match[1];
+}
 
-    /**
-     * Returns a creature's name
-     *
-     * @param text - markdown text
-     */
-    getCreatureName(text) {
-        const match = text.match(/> ## (.+)/);
-        if (!match) return;
-        return match[1];
-    }
-
-    getCreatureSizeAndAlignment(text) {
-        const match = text.match(/\*(\w+) (\w+).*, (.*?)\*/);
-        if (!match) return;
-        return {
-            size: match[1],
-            race: match[2],
-            alignment: match[3]
-        }
-    }
-
-    /**
-     * Returns an object that contains the creatures AC and the source of that armor class
-     *
-     * @Fields: AC, source
-     *
-     * @param text - markdown text
-     */
-    getCreatureACAndSource(text) {
-        const match = text.match(/ \*\*Armor Class\*\* ([0-9]+) ?(.*)?/);
-        return {
-            AC: match[1],
-            source: match[2]
-        };
-    }
-
-    /**
-     * Returns an object that contains the creatures HP and the formula to calculate it
-     *
-     * @Fields: HP, formula
-     *
-     * @param text - markdown text
-     */
-    getCreatureHP(text) {
-        const match = text.match(/ \*\*Hit Points\*\* ([0-9]+)(?: \((.*?)\))?/);
-        return {
-            HP: match[1],
-            formula: match[2]
-        };
-    }
-
-    /**
-     * Returns an object that contains a creature's speed
-     *
-     * @Fields: value, special
-     *
-     * @param text - markdown text
-     */
-    getCreatureSpeed(text) {
-        const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+ ft.),? ?(.*)?/);
-        return {value: speedMatch[1], special: speedMatch[2]};
-    }
-
-    /**
-     * Returns a creature's stats
-     *
-     * @Fields: Str, Dex, Con, Int, Wis, Cha
-     *
-     * @param text - markdown text
-     */
-    getCreatureStats(text) {
-        const stats = [...text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g)];
-        const updatedStats = {Str: 0, Dex: 0, Con: 0, Int: 0, Wis: 0, Cha: 0};
-        stats.forEach((stat, index) => {
-            updatedStats[Object.keys(updatedStats)[index]] = Number(stat[1]);
-        })
-        return updatedStats;
-    }
-
-    /**
-     * Returns a creature's saving throws as an object
-     *
-     * @ExampleFields: Str, Dex
-     *
-     * @param text - markdown text
-     */
-    getSavingThrowMods(text) {
-        const savesObject = {};
-        const match = text.match(/\*\*Saving Throws\*\* (.*)/);
-        if (!match) return;
-        const savesMatch = [...match[1].matchAll(/(\w{3}) \+([0-9]+)/g)];
-        savesMatch.forEach((save) => {
-            savesObject[save[1]] = Number(save[2]);
-        })
-        return savesObject;
-    }
-
-    /**
-     * Returns a creature's skills
-     *
-     * @ExampleFields: Perception, Insist
-     *
-     * @param text - markdown text
-     */
-    getSkills(text) {
-        const skillsObject = {};
-        const match = text.match(/\*\*Skills\*\* (.*)/);
-        if (!match) return;
-        const skills = [...match[0].matchAll(/(\w+) \+([0-9]+)/g)];
-        skills.forEach((skill) => {
-            skillsObject[skill[1]] = Number(skill[2]);
-        })
-        return skillsObject;
-    }
-
-    /**
-     * Returns a creature's damage modifiers (Vulnerability, Resistance, Immunity)
-     *
-     * @ExampleFields: Immunity, Vulnerability
-     *
-     * @param text - markdown text
-     */
-    getDamageModifiers(text) {
-        const modifiersObject = {}
-        const damageMatch = [...text.matchAll(/\*\*(Damage \w+)\*\* (.*)/g)];
-        const conditionMatch = [...text.matchAll(/\*\*(Condition Immunities)\*\* (.*)/g)]
-        damageMatch.forEach((modifier) => {
-            modifiersObject[modifier[1]] = modifier[2];
-        })
-        conditionMatch.forEach((modifier) => {
-            modifiersObject[modifier[1]] = modifier[2];
-        })
-        return modifiersObject;
-    }
-
-    /**
-     * Returns a creature's senses
-     *
-     * @ExampleFields: vision, passive Perception
-     *
-     * @param text - markdown text
-     */
-    getSenses(text) {
-        const sensesObject = {};
-        const match = [...text.match(/\*\*Senses\*\* ?(.*)?,? (passive Perception) ([0-9]+)/)];
-        sensesObject["vision"] = match[1];
-        sensesObject[match[2]] = match[3];
-        return sensesObject;
-    }
-
-    /**
-     * Returns a creature's languages as a string
-     *
-     * @param text - markdown text
-     */
-    getLanguages(text) {
-        return [...text.match(/\*\*Languages\*\* (.*)/)][1];
-    }
-
-    /**
-     * Returns a creature's challange rating
-     *
-     * @Fields: CR, XP
-     *
-     * @param text - markdown text
-     */
-    getChallenge(text) {
-        const match = text.match(/\*\*Challenge\*\* (([0-9]+\/[0-9]+)|([0-9]+)) \((.*) XP\)/)
-        return {CR: eval(match[1]), XP: Number(match[4].replace(',', ''))};
-    }
-
-    /**
-     * Returns an attack's range.
-     *
-     * The object contains 2 fields, one for the ranges represented by a single number and one for ranges
-     * represented with in the short/long style.
-     *
-     * @Fields: singleRange -> value, units, shape ; doubleRange -> short, long, units
-     *
-     * @param text - markdown text
-     */
-    getAttackRange(text) {
-        let singleRangeMatch = text.match(/ ([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/);
-        let doubleRangeMatch = text.match(/ ([0-9]+)\/([0-9]+) (\w+)/);
-        const rangeObject = {
-            singleRange: {value: null, units: null, type: null},
-            doubleRange: {value: null, long: null, units: null}
-        };
-
-
-        if (singleRangeMatch) {
-            if (singleRangeMatch[4]) singleRangeMatch[4] = singleRangeMatch[4].replace(' ', '');
-            rangeObject.singleRange.value = singleRangeMatch[1];
-            rangeObject.singleRange.units = 'ft';
-            rangeObject.singleRange.type = singleRangeMatch[4];
-        }
-        if (doubleRangeMatch) {
-            rangeObject.doubleRange.value = doubleRangeMatch[1];
-            rangeObject.doubleRange.long = doubleRangeMatch[2];
-            rangeObject.doubleRange.units = 'ft';
-        }
-
-        return rangeObject;
-    }
-
-    /**
-     * Returns an attack's damage
-     *
-     * @param text - markdown text
-     */
-    getAttackDamage(text) {
-        const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( ?[+-] ?([0-9]+))?\) (\w+) damage/g)];
-        const attackObject = [];
-        match.forEach((attack) => {
-            attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4], Number(attack[2]?.replace(/ /g, ''))]);
-        })
-        return attackObject
-    }
-
-    /**
-     * Returns an attack's save DC and ability
-     *
-     * @Fields: DC, ability
-     *
-     * @param text - markdown text
-     */
-    getAttackSave(text) {
-        let match = text.match(/DC ([0-9]+) (\w+)/);
-        if (!match) return;
-        const saveObject = {};
-        saveObject["dc"] = Number(match[1]);
-        saveObject["ability"] = this.shortenAbilities(match[2]);
-        return saveObject;
-    }
-
-    /**
-     * Returns an attacks to hit modifier
-     *
-     * @param text - markdown text
-     */
-    getAttackHit(text) {
-        const match = text.match(/([+-] ?[0-9]+) to hit/)
-        if (match) return Number(match[1].replace(' ', ''));
-        return;
-    }
-
-    /**
-     * Returns an attack
-     *
-     * @Fields: damage, range, save, hit, target
-     *
-     * @param text - markdown text
-     */
-    getAttack(text) {
-        const attackObject = {};
-        attackObject['damage'] = this.getAttackDamage(text);
-        attackObject['range'] = this.getAttackRange(text);
-        attackObject['save'] = this.getAttackSave(text);
-        attackObject['hit'] = this.getAttackHit(text);
-        attackObject['target'] = 1;
-        return attackObject;
-    }
-
-    /**
-     * Returns a creature's spellcasting details
-     *
-     * @Fields: level -> spellcaster level, modifier -> spellcasting ability modifier
-     *
-     * @param text - markdown text
-     */
-    getSpellcastingStats(text) {
-        const spellcastingLevel = [...text.match(/([0-9]+)\w{1,2}-level spellcaster/)];
-        const spellcastingModifier = [...text.match(/spellcasting ability is (\w+)/)];
-        return {level: Number(spellcastingLevel[1]), modifier: spellcastingModifier[1]};
-    }
-
-    /**
-     * Returns a creature's abilities
-     * A creature's abilities could be for example attacks or features
-     *
-     * @Fields: description, data
-     * @Note: `data` field may vary depending on the type of ability that is parsed
-     *
-     * @param text - markdown text
-     */
-    getAbilities(text) {
-        const match = [...text.matchAll(/\*\*\*(.*?)\.\*\*\* (.*)/g)];
-        const extraMatch = [...text.matchAll(/(&nbsp;)+\*\*(.*?)\.\*\* (.*)/g)];
-        const abilitiesObject = {};
-
-        match.forEach((ability) => {
-            abilitiesObject[ability[1]] = {
-                description: this._clearText(ability[2]),
-                data: {}
-            };
-            if (ability[1] === 'Spellcasting') abilitiesObject[ability[1]].data = this.getSpellcastingStats(ability[2]);
-            else abilitiesObject[ability[1]].data = this.getAttack(ability[2]);
-        });
-
-        extraMatch.forEach((extraAbility)=>{
-            abilitiesObject[extraAbility[2]] = {
-                description: this._clearText(extraAbility[3]),
-                data: {}
-            };
-            abilitiesObject[extraAbility[2]].data = this.getAttack(extraAbility[3]);
-        });
-        return abilitiesObject;
-    }
-
-    /**
-     * Returns a creature's legendary actions
-     *
-     * @Field description, data, cost
-     * @Note1 data field may vary depending on the type of action parsed
-     * @Note2 cost field is by default 1, will be modified if the name of the action has a (Costs x Actions) structure
-     *
-     * @param text
-     */
-    getLegendaryActions(text) {
-        const match = [...text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g)];
-
-        const actionObject = {};
-        match.forEach((action) => {
-            actionObject[action[1]] = {
-                description: action[4],
-                data: {},
-                cost: 1
-            };
-            actionObject[action[1]].data = this.getAttack(action[4]);
-            actionObject[action[1]].cost = action[3] ? action[3] : 1;
-        })
-
-        return actionObject;
-    }
-
-    /**
-     * Returns the number of legendary actions from an actor
-     *
-     * @param text - markdown text
-     */
-    getNumberOfLegendaryActions(text) {
-        const legendaryActionDescription = text.match(/> .* can take ([0-9]+) legendary actions, .*/);
-
-        return Number(legendaryActionDescription?.[1]);
-    }
-
-    /**
-     * Returns the number of legendary resistances from an actor
-     *
-     * @param text - markdown text
-     */
-    getNumberOfLegendaryResistances(text) {
-        const legendaryRes = text.match(/> \*\*\*Legendary Resistance \(([0-9]+)\/Day\)\.\*\*\*/);
-
-        return Number(legendaryRes?.[1]);
-    }
-
-    /**
-     * Returns a creature's spell list
-     *
-     * @ExampleFields: Cantrips, 1, 2, 3, 4
-     * @Note: The function only returns the spell name because 5e stat block have only the names of the spells i guess...
-     *
-     * @param text - markdown text
-     */
-    getSpells(text) {
-        const matchedSpells = [...text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g)];
-        const spellsObject = {};
-        matchedSpells.forEach((spell) => {
-            const typeOfSpell = spell[2] ? spell[2] : spell[1];
-            spellsObject[typeOfSpell] = spell[3].replace("*", "").split(",");
-        })
-        return spellsObject;
-    }
-
-    /**
-     * Returns a creature's number of available spellslots
-     *
-     * @param text - markdown text
-     */
-    getSpellSlots(text) {
-        const matchedSlots = [...text.matchAll(/([0-9]+)\w{1,2} level \(([0-9]+) slots?\)/g)];
-        const slotsObject = {}
-        matchedSlots.forEach((slot)=>{
-            slotsObject[`spell${slot[1]}`] = {
-                value: Number(slot[2]),
-                max: Number(slot[2])
-            };
-        })
-        return slotsObject;
-    }
-
-    /**
-     * Returns a creature's proficiency
-     * The proficiency is calculated using an attack where the to hit score has the prof added adn the + to the damage roll doesn't
-     *
-     * @param abilities - an object of all the creatures abilities
-     */
-    getProficiency(abilities) {
-        for (const key in abilities) {
-            if (!abilities.hasOwnProperty(key)) continue;
-            if (abilities[key]?.data?.hit && abilities[key]?.data?.damage?.[0]?.[2])
-                return abilities[key].data.hit - abilities[key].data.damage[0][2];
-        }
-        return 0;
-    }
-
-    /**
-     * Returns the ability modifier given the ability score
-     *
-     * @param abilityScore - ability score, example 20 -> returns +5
-     */
-    getAbilityModifier(abilityScore) {
-        return Math.floor(abilityScore / 2 - 5);
+const getCreatureSizeAndAlignment = (text) => {
+    const match = text.match(/\*(\w+) (\w+).*, (.*?)\*/);
+    if (!match) return;
+    return {
+        size: match[1],
+        race: match[2],
+        alignment: match[3]
     }
 }
 
-export default MarkdownParser.getInstance();
+/**
+ * Returns an object that contains the creatures AC and the source of that armor class
+ *
+ * @Fields: AC, source
+ *
+ * @param text - markdown text
+ */
+const getCreatureACAndSource = (text) => {
+    const match = text.match(/ \*\*Armor Class\*\* ([0-9]+) ?(.*)?/);
+    return {
+        AC: match[1],
+        source: match[2]
+    };
+}
+
+/**
+ * Returns an object that contains the creatures HP and the formula to calculate it
+ *
+ * @Fields: HP, formula
+ *
+ * @param text - markdown text
+ */
+const getCreatureHP = (text) => {
+    const match = text.match(/ \*\*Hit Points\*\* ([0-9]+)(?: \((.*?)\))?/);
+    return {
+        HP: match[1],
+        formula: match[2]
+    };
+}
+
+/**
+ * Returns an object that contains a creature's speed
+ *
+ * @Fields: value, special
+ *
+ * @param text - markdown text
+ */
+const getCreatureSpeed = (text) => {
+    const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+ ft.),? ?(.*)?/);
+    return {value: speedMatch[1], special: speedMatch[2]};
+}
+
+/**
+ * Returns a creature's stats
+ *
+ * @Fields: Str, Dex, Con, Int, Wis, Cha
+ *
+ * @param text - markdown text
+ */
+const getCreatureStats = (text) => {
+    const stats = [...text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g)];
+    const updatedStats = {Str: 0, Dex: 0, Con: 0, Int: 0, Wis: 0, Cha: 0};
+    stats.forEach((stat, index) => {
+        updatedStats[Object.keys(updatedStats)[index]] = Number(stat[1]);
+    })
+    return updatedStats;
+}
+
+/**
+ * Returns a creature's saving throws as an object
+ *
+ * @ExampleFields: Str, Dex
+ *
+ * @param text - markdown text
+ */
+const getSavingThrowMods = (text) => {
+    const savesObject = {};
+    const match = text.match(/\*\*Saving Throws\*\* (.*)/);
+    if (!match) return;
+    const savesMatch = [...match[1].matchAll(/(\w{3}) \+([0-9]+)/g)];
+    savesMatch.forEach((save) => {
+        savesObject[save[1]] = Number(save[2]);
+    })
+    return savesObject;
+}
+
+/**
+ * Returns a creature's skills
+ *
+ * @ExampleFields: Perception, Insist
+ *
+ * @param text - markdown text
+ */
+const getSkills = (text) => {
+    const skillsObject = {};
+    const match = text.match(/\*\*Skills\*\* (.*)/);
+    if (!match) return;
+    const skills = [...match[0].matchAll(/(\w+) \+([0-9]+)/g)];
+    skills.forEach((skill) => {
+        skillsObject[skill[1]] = Number(skill[2]);
+    })
+    return skillsObject;
+}
+
+/**
+ * Returns a creature's damage modifiers (Vulnerability, Resistance, Immunity)
+ *
+ * @ExampleFields: Immunity, Vulnerability
+ *
+ * @param text - markdown text
+ */
+const getDamageModifiers = (text) => {
+    const modifiersObject = {}
+    const damageMatch = [...text.matchAll(/\*\*(Damage \w+)\*\* (.*)/g)];
+    const conditionMatch = [...text.matchAll(/\*\*(Condition Immunities)\*\* (.*)/g)]
+    damageMatch.forEach((modifier) => {
+        modifiersObject[modifier[1]] = modifier[2];
+    })
+    conditionMatch.forEach((modifier) => {
+        modifiersObject[modifier[1]] = modifier[2];
+    })
+    return modifiersObject;
+}
+
+/**
+ * Returns a creature's senses
+ *
+ * @ExampleFields: vision, passive Perception
+ *
+ * @param text - markdown text
+ */
+const getSenses = (text) => {
+    const sensesObject = {};
+    const match = [...text.match(/\*\*Senses\*\* ?(.*)?,? (passive Perception) ([0-9]+)/)];
+    sensesObject["vision"] = match[1];
+    sensesObject[match[2]] = match[3];
+    return sensesObject;
+}
+
+/**
+ * Returns a creature's languages as a string
+ *
+ * @param text - markdown text
+ */
+const getLanguages = (text) => [...text.match(/\*\*Languages\*\* (.*)/)][1];
+
+
+/**
+ * Returns a creature's challange rating
+ *
+ * @Fields: CR, XP
+ *
+ * @param text - markdown text
+ */
+const getChallenge = (text) => {
+    const match = text.match(/\*\*Challenge\*\* (([0-9]+\/[0-9]+)|([0-9]+)) \((.*) XP\)/)
+    return {CR: eval(match[1]), XP: Number(match[4].replace(',', ''))};
+}
+
+/**
+ * Returns an attack's range.
+ *
+ * The object contains 2 fields, one for the ranges represented by a single number and one for ranges
+ * represented with in the short/long style.
+ *
+ * @Fields: singleRange -> value, units, shape ; doubleRange -> short, long, units
+ *
+ * @param text - markdown text
+ */
+const getAttackRange = (text) => {
+    let singleRangeMatch = text.match(/ ([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/);
+    let doubleRangeMatch = text.match(/ ([0-9]+)\/([0-9]+) (\w+)/);
+    const rangeObject = {
+        singleRange: {value: null, units: null, type: null},
+        doubleRange: {value: null, long: null, units: null}
+    };
+
+    if (singleRangeMatch) {
+        if (singleRangeMatch[4]) singleRangeMatch[4] = singleRangeMatch[4].replace(' ', '');
+        rangeObject.singleRange.value = singleRangeMatch[1];
+        rangeObject.singleRange.units = 'ft';
+        rangeObject.singleRange.type = singleRangeMatch[4];
+    }
+    if (doubleRangeMatch) {
+        rangeObject.doubleRange.value = doubleRangeMatch[1];
+        rangeObject.doubleRange.long = doubleRangeMatch[2];
+        rangeObject.doubleRange.units = 'ft';
+    }
+
+    return rangeObject;
+}
+
+/**
+ * Returns an attack's damage
+ *
+ * @param text - markdown text
+ */
+const getAttackDamage = (text) => {
+    const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( ?[+-] ?([0-9]+))?\) (\w+) damage/g)];
+    const attackObject = [];
+    match.forEach((attack) => {
+        attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4], Number(attack[2]?.replace(/ /g, ''))]);
+    })
+    return attackObject
+}
+
+/**
+ * Returns an attack's save DC and ability
+ *
+ * @Fields: DC, ability
+ *
+ * @param text - markdown text
+ */
+const getAttackSave = (text) => {
+    let match = text.match(/DC ([0-9]+) (\w+)/);
+    if (!match) return;
+    return {
+        'dc': Number(match[1]),
+        'ability': shortenAbilities(match[2])
+    }
+}
+
+/**
+ * Returns an attacks to hit modifier
+ *
+ * @param text - markdown text
+ */
+const getAttackHit = (text) => {
+    const match = text.match(/([+-] ?[0-9]+) to hit/)
+    if (match) return Number(match[1].replace(' ', ''));
+}
+
+/**
+ * Returns an attack
+ *
+ * @Fields: damage, range, save, hit, target
+ *
+ * @param text - markdown text
+ */
+const getAttack = (text) => {
+    return {
+        'damage': getAttackDamage(text),
+        'range': getAttackRange(text),
+        'save': getAttackSave(text),
+        'hit': getAttackHit(text),
+        'target': 1
+    }
+}
+
+/**
+ * Returns a creature's spellcasting details
+ *
+ * @Fields: level -> spellcaster level, modifier -> spellcasting ability modifier
+ *
+ * @param text - markdown text
+ */
+const getSpellcastingStats = (text) => {
+    const spellcastingLevel = [...text.match(/([0-9]+)\w{1,2}-level spellcaster/)];
+    const spellcastingModifier = [...text.match(/spellcasting ability is (\w+)/)];
+    return {level: Number(spellcastingLevel[1]), modifier: spellcastingModifier[1]};
+}
+
+/**
+ * Returns a creature's abilities
+ * A creature's abilities could be for example attacks or features
+ *
+ * @Fields: description, data
+ * @Note: `data` field may vary depending on the type of ability that is parsed
+ *
+ * @param text - markdown text
+ */
+const getAbilities = (text) => {
+    const match = [...text.matchAll(/\*\*\*(.*?)\.\*\*\* (.*)/g)];
+    const extraMatch = [...text.matchAll(/(&nbsp;)+\*\*(.*?)\.\*\* (.*)/g)];
+    const abilitiesObject = {};
+
+    match.forEach((ability) => {
+        abilitiesObject[ability[1]] = {
+            description: _clearText(ability[2]),
+            data: {}
+        };
+        if (ability[1] === 'Spellcasting') abilitiesObject[ability[1]].data = getSpellcastingStats(ability[2]);
+        else abilitiesObject[ability[1]].data = getAttack(ability[2]);
+    });
+
+    extraMatch.forEach((extraAbility) => {
+        abilitiesObject[extraAbility[2]] = {
+            description: _clearText(extraAbility[3]),
+            data: {}
+        };
+        abilitiesObject[extraAbility[2]].data = getAttack(extraAbility[3]);
+    });
+    return abilitiesObject;
+}
+
+/**
+ * Returns a creature's legendary actions
+ *
+ * @Field description, data, cost
+ * @Note1 data field may vary depending on the type of action parsed
+ * @Note2 cost field is by default 1, will be modified if the name of the action has a (Costs x Actions) structure
+ *
+ * @param text
+ */
+const getLegendaryActions = (text) => {
+    const match = [...text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g)];
+
+    const actionObject = {};
+    match.forEach((action) => {
+        actionObject[action[1]] = {
+            description: action[4],
+            data: {},
+            cost: 1
+        };
+        actionObject[action[1]].data = getAttack(action[4]);
+        actionObject[action[1]].cost = action[3] ? action[3] : 1;
+    })
+
+    return actionObject;
+}
+
+/**
+ * Returns the number of legendary actions from an actor
+ *
+ * @param text - markdown text
+ */
+const getNumberOfLegendaryActions = (text) => {
+    const legendaryActionDescription = text.match(/> .* can take ([0-9]+) legendary actions, .*/);
+
+    return Number(legendaryActionDescription?.[1]);
+}
+
+/**
+ * Returns the number of legendary resistances from an actor
+ *
+ * @param text - markdown text
+ */
+const getNumberOfLegendaryResistances = (text) => {
+    const legendaryRes = text.match(/> \*\*\*Legendary Resistance \(([0-9]+)\/Day\)\.\*\*\*/);
+
+    return Number(legendaryRes?.[1]);
+}
+
+/**
+ * Returns a creature's spell list
+ *
+ * @ExampleFields: Cantrips, 1, 2, 3, 4
+ * @Note: The function only returns the spell name because 5e stat block have only the names of the spells i guess...
+ *
+ * @param text - markdown text
+ */
+const getSpells = (text) => {
+    const matchedSpells = [...text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g)];
+    const spellsObject = {};
+    matchedSpells.forEach((spell) => {
+        const typeOfSpell = spell[2] ? spell[2] : spell[1];
+        spellsObject[typeOfSpell] = spell[3].replace("*", "").split(",");
+    })
+    return spellsObject;
+}
+
+/**
+ * Returns a creature's number of available spellslots
+ *
+ * @param text - markdown text
+ */
+const getSpellSlots = (text) => {
+    const matchedSlots = [...text.matchAll(/([0-9]+)\w{1,2} level \(([0-9]+) slots?\)/g)];
+    const slotsObject = {}
+    matchedSlots.forEach((slot) => {
+        slotsObject[`spell${slot[1]}`] = {
+            value: Number(slot[2]),
+            max: Number(slot[2])
+        };
+    })
+    return slotsObject;
+}
+
+/**
+ * Returns a creature's proficiency
+ * The proficiency is calculated using an attack where the to hit score has the prof added adn the + to the damage roll doesn't
+ *
+ * @param abilities - an object of all the creatures abilities
+ */
+const getProficiency = (abilities) => {
+    for (const key in abilities) {
+        if (!abilities.hasOwnProperty(key)) continue;
+        if (abilities[key]?.data?.hit && abilities[key]?.data?.damage?.[0]?.[2])
+            return abilities[key].data.hit - abilities[key].data.damage[0][2];
+    }
+    return 0;
+}
+
+/**
+ * Returns the ability modifier given the ability score
+ *
+ * @param abilityScore - ability score, example 20 -> returns +5
+ */
+const getAbilityModifier = (abilityScore) => Math.floor(abilityScore / 2 - 5);
+
+export {
+    getAbilityModifier,
+    shortenSkills,
+    convertResistance,
+    convertSizes,
+    shortenAbilities,
+    getCreatureSizeAndAlignment,
+    getCreatureName,
+    getAbilities,
+    getLegendaryActions,
+    getSpells,
+    getCreatureStats,
+    getSavingThrowMods,
+    getCreatureACAndSource,
+    getCreatureSpeed,
+    getCreatureHP,
+    getChallenge,
+    getLanguages,
+    getSenses,
+    getDamageModifiers,
+    getSkills,
+    getNumberOfLegendaryActions,
+    getNumberOfLegendaryResistances,
+    getSpellSlots
+}

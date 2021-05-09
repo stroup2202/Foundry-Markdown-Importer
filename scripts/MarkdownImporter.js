@@ -1,4 +1,4 @@
-import ImportWindow from "./ImportWindow";
+import ImportWindow from "./ImportWindow.js";
 
 Hooks.on("renderSidebarTab", async (app, html) => {
     if (app?.options?.id == "actors") {
