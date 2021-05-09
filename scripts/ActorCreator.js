@@ -127,7 +127,6 @@ const _makeTraitsStructure = (propsTraits) => {
         ..._makeResistancesStructure(propsTraits.damageModifiers),
         size: convertSizes(propsTraits.size),
         languages: _makeLanguagesStructure(propsTraits.languages),
-        senses: propsTraits.senses['vision']
     };
 }
 
@@ -178,7 +177,8 @@ const _makeAttributesStructure = (propsAttributes, creatureProficiency, abilitie
             value: Number(propsAttributes.armor['AC'])
         },
         hp: _makeHpStructure(propsAttributes.hp),
-        speed: propsAttributes.speed,
+        movement: propsAttributes.movement,
+        senses: propsAttributes.senses,
         prof: creatureProficiency,
         spellcasting: shortenAbilities(abilities?.Spellcasting?.data?.modifier)
     };
@@ -232,6 +232,7 @@ const _makeDataStructure = (propsData, creatureProficiency, creatureAbilities, c
  */
 const _makeProps = (markdownText) => {
     const sizeAndAlignment = getCreatureSizeAndAlignment(markdownText);
+    const senses = getSenses(markdownText);
     const props = {
         name: getCreatureName(markdownText),
         abilities: getAbilities(markdownText),
@@ -242,7 +243,8 @@ const _makeProps = (markdownText) => {
             savingThrowMods: getSavingThrowMods(markdownText),
             attributes: {
                 armor: getCreatureACAndSource(markdownText),
-                speed: getCreatureSpeed(markdownText),
+                movement: getCreatureSpeed(markdownText),
+                senses: senses.vision,
                 hp: getCreatureHP(markdownText)
             },
             details: {
@@ -253,7 +255,6 @@ const _makeProps = (markdownText) => {
             traits: {
                 size: sizeAndAlignment['size'],
                 languages: getLanguages(markdownText).toLocaleLowerCase(),
-                senses: getSenses(markdownText),
                 damageModifiers: getDamageModifiers(markdownText),
             },
             skills: {

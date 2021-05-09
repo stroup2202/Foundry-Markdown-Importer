@@ -108,6 +108,21 @@ const getCreatureHP = (text) => {
     };
 }
 
+const specialSpeed = (special) => {
+    const matched = [...special.matchAll(/(\w+) ([0-9]+)/g)]
+    const out = {
+        'burrow': 0,
+        'climb': 0,
+        'fly': 0,
+        'hover': false,
+        'swim': 0
+    };
+    matched.forEach((match) => {
+        out[match[1]] = Number(match[2]);
+    })
+    return out;
+}
+
 /**
  * Returns an object that contains a creature's speed
  *
@@ -116,8 +131,12 @@ const getCreatureHP = (text) => {
  * @param text - markdown text
  */
 const getCreatureSpeed = (text) => {
-    const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+ ft.),? ?(.*)?/);
-    return {value: speedMatch[1], special: speedMatch[2]};
+    const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+) ft.,? ?(.*)?/);
+    return {
+        walk: Number(speedMatch[1]),
+        ...specialSpeed(speedMatch[2]),
+        units: 'ft'
+    };
 }
 
 /**
@@ -192,6 +211,20 @@ const getDamageModifiers = (text) => {
     return modifiersObject;
 }
 
+const getVision = (visionText) => {
+    const matched = [...visionText.matchAll(/(\w+) ([0-9]+)/g)];
+    const out = {
+        'blindsight': 0,
+        'darkvision': 0,
+        'special': "",
+        'tremorsense': 0,
+        'truesight': 0,
+        'units': "ft"
+    }
+    matched.forEach((match) => out[match[1]] = Number(match[2]));
+    return out;
+}
+
 /**
  * Returns a creature's senses
  *
@@ -202,7 +235,7 @@ const getDamageModifiers = (text) => {
 const getSenses = (text) => {
     const sensesObject = {};
     const match = [...text.match(/\*\*Senses\*\* ?(.*)?,? (passive Perception) ([0-9]+)/)];
-    sensesObject["vision"] = match[1];
+    sensesObject["vision"] = getVision(match[1]);
     sensesObject[match[2]] = match[3];
     return sensesObject;
 }
