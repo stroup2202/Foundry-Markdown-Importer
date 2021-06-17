@@ -109,6 +109,7 @@ const getCreatureHP = (text) => {
 }
 
 const specialSpeed = (special) => {
+    if (!special) return;
     const matched = [...special.matchAll(/(\w+) ([0-9]+)/g)]
     const out = {
         'burrow': 0,
