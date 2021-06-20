@@ -213,6 +213,7 @@ const getDamageModifiers = (text) => {
 }
 
 const getVision = (visionText) => {
+    if (!visionText) return;
     const matched = [...visionText.matchAll(/(\w+) ([0-9]+)/g)];
     const out = {
         'blindsight': 0,
@@ -360,7 +361,7 @@ const getAttack = (text) => {
  */
 const getSpellcastingStats = (text) => {
     const spellcastingLevel = [...text.match(/([0-9]+)\w{1,2}-level spellcaster/)];
-    const spellcastingModifier = [...text.match(/spellcasting ability is (\w+)/)];
+    const spellcastingModifier = [...text.match(/spell ?casting ability is (\w+)/)];
     return {level: Number(spellcastingLevel[1]), modifier: spellcastingModifier[1]};
 }
 
