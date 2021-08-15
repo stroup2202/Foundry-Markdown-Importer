@@ -87,6 +87,7 @@ const getCreatureSizeAndAlignment = (text) => {
  */
 const getCreatureACAndSource = (text) => {
     const match = text.match(/ \*\*Armor Class\*\* ([0-9]+) ?(.*)?/);
+    if (!match) return;
     return {
         AC: match[1],
         source: match[2]
@@ -102,6 +103,7 @@ const getCreatureACAndSource = (text) => {
  */
 const getCreatureHP = (text) => {
     const match = text.match(/ \*\*Hit Points\*\* ([0-9]+)(?: \((.*?)\))?/);
+    if (!match) return;
     return {
         HP: match[1],
         formula: match[2]
@@ -110,7 +112,7 @@ const getCreatureHP = (text) => {
 
 const specialSpeed = (special) => {
     if (!special) return;
-    const matched = [...special.matchAll(/(\w+) ([0-9]+)/g)]
+    const matched = [...(special.matchAll(/(\w+) ([0-9]+)/g) || [])]
     const out = {
         'burrow': 0,
         'climb': 0,
@@ -133,6 +135,7 @@ const specialSpeed = (special) => {
  */
 const getCreatureSpeed = (text) => {
     const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+) ft.,? ?(.*)?/);
+    if (!speedMatch) return;
     return {
         walk: Number(speedMatch[1]),
         ...specialSpeed(speedMatch[2]),
@@ -148,7 +151,7 @@ const getCreatureSpeed = (text) => {
  * @param text - markdown text
  */
 const getCreatureStats = (text) => {
-    const stats = [...text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g)];
+    const stats = [...(text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g) || [])];
     const updatedStats = {Str: 0, Dex: 0, Con: 0, Int: 0, Wis: 0, Cha: 0};
     stats.forEach((stat, index) => {
         updatedStats[Object.keys(updatedStats)[index]] = Number(stat[1]);
@@ -167,7 +170,7 @@ const getSavingThrowMods = (text) => {
     const savesObject = {};
     const match = text.match(/\*\*Saving Throws\*\* (.*)/);
     if (!match) return;
-    const savesMatch = [...match[1].matchAll(/(\w{3}) \+([0-9]+)/g)];
+    const savesMatch = [...(match[1].matchAll(/(\w{3}) \+([0-9]+)/g) || [])];
     savesMatch.forEach((save) => {
         savesObject[save[1]] = Number(save[2]);
     })
@@ -185,7 +188,7 @@ const getSkills = (text) => {
     const skillsObject = {};
     const match = text.match(/\*\*Skills\*\* (.*)/);
     if (!match) return;
-    const skills = [...match[0].matchAll(/(\w+) \+([0-9]+)/g)];
+    const skills = [...(match[0].matchAll(/(\w+) \+([0-9]+)/g) || [])];
     skills.forEach((skill) => {
         skillsObject[skill[1]] = Number(skill[2]);
     })
@@ -201,8 +204,8 @@ const getSkills = (text) => {
  */
 const getDamageModifiers = (text) => {
     const modifiersObject = {}
-    const damageMatch = [...text.matchAll(/\*\*(Damage \w+)\*\* (.*)/g)];
-    const conditionMatch = [...text.matchAll(/\*\*(Condition Immunities)\*\* (.*)/g)]
+    const damageMatch = [...(text.matchAll(/\*\*(Damage \w+)\*\* (.*)/g) || [])];
+    const conditionMatch = [...(text.matchAll(/\*\*(Condition Immunities)\*\* (.*)/g) || [])]
     damageMatch.forEach((modifier) => {
         modifiersObject[modifier[1]] = modifier[2];
     })
@@ -214,7 +217,7 @@ const getDamageModifiers = (text) => {
 
 const getVision = (visionText) => {
     if (!visionText) return;
-    const matched = [...visionText.matchAll(/(\w+) ([0-9]+)/g)];
+    const matched = [...(visionText.matchAll(/(\w+) ([0-9]+)/g) || [])];
     const out = {
         'blindsight': 0,
         'darkvision': 0,
@@ -236,7 +239,7 @@ const getVision = (visionText) => {
  */
 const getSenses = (text) => {
     const sensesObject = {};
-    const match = [...text.match(/\*\*Senses\*\* ?(.*)?,? (passive Perception) ([0-9]+)/)];
+    const match = [...(text.match(/\*\*Senses\*\* ?(.*)?,? (passive Perception) ([0-9]+)/) || [])];
     sensesObject["vision"] = getVision(match[1]);
     sensesObject[match[2]] = match[3];
     return sensesObject;
@@ -247,7 +250,7 @@ const getSenses = (text) => {
  *
  * @param text - markdown text
  */
-const getLanguages = (text) => [...text.match(/\*\*Languages\*\* (.*)/)][1];
+const getLanguages = (text) => [...(text.match(/\*\*Languages\*\* (.*)/) || [])][1];
 
 
 /**
@@ -301,7 +304,7 @@ const getAttackRange = (text) => {
  * @param text - markdown text
  */
 const getAttackDamage = (text) => {
-    const match = [...text.matchAll(/\(([0-9]+d[0-9]+)( ?[+-] ?([0-9]+))?\) (\w+) damage/g)];
+    const match = [...(text.matchAll(/\(([0-9]+d[0-9]+)( ?[+-] ?([0-9]+))?\) (\w+) damage/g) || [])];
     const attackObject = [];
     match.forEach((attack) => {
         attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4], Number(attack[2]?.replace(/ /g, ''))]);
@@ -360,8 +363,8 @@ const getAttack = (text) => {
  * @param text - markdown text
  */
 const getSpellcastingStats = (text) => {
-    const spellcastingLevel = [...text.match(/([0-9]+)\w{1,2}-level spellcaster/)];
-    const spellcastingModifier = [...text.match(/spell ?casting ability is (\w+)/)];
+    const spellcastingLevel = [...(text.match(/([0-9]+)\w{1,2}-level spellcaster/) || [])];
+    const spellcastingModifier = [...(text.match(/spell ?casting ability is (\w+)/) || [])];
     return {level: Number(spellcastingLevel[1]), modifier: spellcastingModifier[1]};
 }
 
@@ -375,8 +378,8 @@ const getSpellcastingStats = (text) => {
  * @param text - markdown text
  */
 const getAbilities = (text) => {
-    const match = [...text.matchAll(/\*\*\*(.*?)\.\*\*\* (.*)/g)];
-    const extraMatch = [...text.matchAll(/(&nbsp;)+\*\*(.*?)\.\*\* (.*)/g)];
+    const match = [...(text.matchAll(/\*\*\*(.*?)\.\*\*\* (.*)/g) || [])];
+    const extraMatch = [...(text.matchAll(/(&nbsp;)+\*\*(.*?)\.\*\* (.*)/g) || [])];
     const abilitiesObject = {};
 
     match.forEach((ability) => {
@@ -408,7 +411,7 @@ const getAbilities = (text) => {
  * @param text
  */
 const getLegendaryActions = (text) => {
-    const match = [...text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g)];
+    const match = [...(text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g) || [])];
 
     const actionObject = {};
     match.forEach((action) => {
@@ -455,7 +458,7 @@ const getNumberOfLegendaryResistances = (text) => {
  * @param text - markdown text
  */
 const getSpells = (text) => {
-    const matchedSpells = [...text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g)];
+    const matchedSpells = [...(text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g) || [])];
     const spellsObject = {};
     matchedSpells.forEach((spell) => {
         const typeOfSpell = spell[2] ? spell[2] : spell[1];
@@ -470,7 +473,7 @@ const getSpells = (text) => {
  * @param text - markdown text
  */
 const getSpellSlots = (text) => {
-    const matchedSlots = [...text.matchAll(/([0-9]+)\w{1,2} level \(([0-9]+) slots?\)/g)];
+    const matchedSlots = [...(text.matchAll(/([0-9]+)\w{1,2} level \(([0-9]+) slots?\)/g) || [])];
     const slotsObject = {}
     matchedSlots.forEach((slot) => {
         slotsObject[`spell${slot[1]}`] = {
