@@ -1,48 +1,48 @@
 const _skillsToShortMap = {
-    'Acrobatics': 'acr',
-    'Handling': 'ani',
-    'Arcana': 'arc',
-    'Athletics': 'ath',
-    'Deception': 'dec',
-    'History': 'his',
-    'Insight': 'ins',
-    'Intimidation': 'itm',
-    'Investigation': 'inv',
-    'Medicine': 'med',
-    'Nature': 'nat',
-    'Perception': 'prc',
-    'Performance': 'prf',
-    'Persuasion': 'per',
-    'Religion': 'rel',
-    'Hand': 'slt',
-    'Stealth': 'ste',
-    'Survival': 'sur',
+  'Acrobatics': 'acr',
+  'Handling': 'ani',
+  'Arcana': 'arc',
+  'Athletics': 'ath',
+  'Deception': 'dec',
+  'History': 'his',
+  'Insight': 'ins',
+  'Intimidation': 'itm',
+  'Investigation': 'inv',
+  'Medicine': 'med',
+  'Nature': 'nat',
+  'Perception': 'prc',
+  'Performance': 'prf',
+  'Persuasion': 'per',
+  'Religion': 'rel',
+  'Hand': 'slt',
+  'Stealth': 'ste',
+  'Survival': 'sur',
 };
 
 const _sizesMap = {
-    "Gargantuan": "grg",
-    "Large": "lg",
-    "Huge": "huge",
-    "Medium": "med",
-    "Small": "sm",
-    "Tiny": "tiny"
-}
+  'Gargantuan': 'grg',
+  'Large': 'lg',
+  'Huge': 'huge',
+  'Medium': 'med',
+  'Small': 'sm',
+  'Tiny': 'tiny'
+};
 
 const _resistanceMap = {
-    "Damage Immunities": "di",
-    "Damage Vulnerabilities": "dv",
-    "Damage Resistances": "dr",
-    "Condition Immunities": "ci"
-}
+  'Damage Immunities': 'di',
+  'Damage Vulnerabilities': 'dv',
+  'Damage Resistances': 'dr',
+  'Condition Immunities': 'ci'
+};
 
 const _abilitiesMap = {
-    'Strength': 'str',
-    'Dexterity': 'dex',
-    'Constitution': 'con',
-    'Intelligence': 'int',
-    "Wisdom": 'wis',
-    "Charisma": 'cha'
-}
+  'Strength': 'str',
+  'Dexterity': 'dex',
+  'Constitution': 'con',
+  'Intelligence': 'int',
+  'Wisdom': 'wis',
+  'Charisma': 'cha'
+};
 
 const shortenAbilities = (ability) => _abilitiesMap[ability];
 
@@ -53,9 +53,9 @@ const convertSizes = (size) => _sizesMap[size];
 const convertResistance = (resistance) => _resistanceMap[resistance];
 
 const _clearText = (text) => {
-    text = text.replace(/_/g, '');
-    return text;
-}
+  text = text.replace(/_/g, '');
+  return text;
+};
 
 /**
  * Returns a creature's name
@@ -63,20 +63,20 @@ const _clearText = (text) => {
  * @param text - markdown text
  */
 const getCreatureName = (text) => {
-    const match = text.match(/> ## (.+)/);
-    if (!match) return;
-    return match[1];
-}
+  const match = text.match(/> ## (.+)/);
+  if (!match) return;
+  return match[1];
+};
 
 const getCreatureSizeAndAlignment = (text) => {
-    const match = text.match(/\*(\w+) (\w+).*, (.*?)\*/);
-    if (!match) return;
-    return {
-        size: match[1],
-        race: match[2],
-        alignment: match[3]
-    }
-}
+  const match = text.match(/\*(\w+) (\w+).*, (.*?)\*/);
+  if (!match) return;
+  return {
+    size: match[1],
+    race: match[2],
+    alignment: match[3]
+  };
+};
 
 /**
  * Returns an object that contains the creatures AC and the source of that armor class
@@ -86,13 +86,13 @@ const getCreatureSizeAndAlignment = (text) => {
  * @param text - markdown text
  */
 const getCreatureACAndSource = (text) => {
-    const match = text.match(/ \*\*Armor Class\*\* ([0-9]+) ?(.*)?/);
-    if (!match) return;
-    return {
-        AC: match[1],
-        source: match[2]
-    };
-}
+  const match = text.match(/ \*\*Armor Class\*\* ([0-9]+) ?(.*)?/);
+  if (!match) return;
+  return {
+    AC: match[1],
+    source: match[2]
+  };
+};
 
 /**
  * Returns an object that contains the creatures HP and the formula to calculate it
@@ -102,29 +102,29 @@ const getCreatureACAndSource = (text) => {
  * @param text - markdown text
  */
 const getCreatureHP = (text) => {
-    const match = text.match(/ \*\*Hit Points\*\* ([0-9]+)(?: \((.*?)\))?/);
-    if (!match) return;
-    return {
-        HP: match[1],
-        formula: match[2]
-    };
-}
+  const match = text.match(/ \*\*Hit Points\*\* ([0-9]+)(?: \((.*?)\))?/);
+  if (!match) return;
+  return {
+    HP: match[1],
+    formula: match[2]
+  };
+};
 
 const specialSpeed = (special) => {
-    if (!special) return;
-    const matched = [...(special.matchAll(/(\w+) ([0-9]+)/g) || [])]
-    const out = {
-        'burrow': 0,
-        'climb': 0,
-        'fly': 0,
-        'hover': false,
-        'swim': 0
-    };
-    matched.forEach((match) => {
-        out[match[1]] = Number(match[2]);
-    })
-    return out;
-}
+  if (!special) return;
+  const matched = [...(special.matchAll(/(\w+) ([0-9]+)/g) || [])];
+  const out = {
+    'burrow': 0,
+    'climb': 0,
+    'fly': 0,
+    'hover': false,
+    'swim': 0
+  };
+  matched.forEach((match) => {
+    out[match[1]] = Number(match[2]);
+  });
+  return out;
+};
 
 /**
  * Returns an object that contains a creature's speed
@@ -134,14 +134,14 @@ const specialSpeed = (special) => {
  * @param text - markdown text
  */
 const getCreatureSpeed = (text) => {
-    const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+) ft.,? ?(.*)?/);
-    if (!speedMatch) return;
-    return {
-        walk: Number(speedMatch[1]),
-        ...specialSpeed(speedMatch[2]),
-        units: 'ft'
-    };
-}
+  const speedMatch = text.match(/\*\*Speed\*\* ([0-9]+) ft.,? ?(.*)?/);
+  if (!speedMatch) return;
+  return {
+    walk: Number(speedMatch[1]),
+    ...specialSpeed(speedMatch[2]),
+    units: 'ft'
+  };
+};
 
 /**
  * Returns a creature's stats
@@ -151,13 +151,13 @@ const getCreatureSpeed = (text) => {
  * @param text - markdown text
  */
 const getCreatureStats = (text) => {
-    const stats = [...(text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g) || [])];
-    const updatedStats = {Str: 0, Dex: 0, Con: 0, Int: 0, Wis: 0, Cha: 0};
-    stats.forEach((stat, index) => {
-        updatedStats[Object.keys(updatedStats)[index]] = Number(stat[1]);
-    })
-    return updatedStats;
-}
+  const stats = [...(text.matchAll(/\|([0-9]+) \([+-][0-9]+\)/g) || [])];
+  const updatedStats = {Str: 0, Dex: 0, Con: 0, Int: 0, Wis: 0, Cha: 0};
+  stats.forEach((stat, index) => {
+    updatedStats[Object.keys(updatedStats)[index]] = Number(stat[1]);
+  });
+  return updatedStats;
+};
 
 /**
  * Returns a creature's saving throws as an object
@@ -167,15 +167,15 @@ const getCreatureStats = (text) => {
  * @param text - markdown text
  */
 const getSavingThrowMods = (text) => {
-    const savesObject = {};
-    const match = text.match(/\*\*Saving Throws\*\* (.*)/);
-    if (!match) return;
-    const savesMatch = [...(match[1].matchAll(/(\w{3}) \+([0-9]+)/g) || [])];
-    savesMatch.forEach((save) => {
-        savesObject[save[1]] = Number(save[2]);
-    })
-    return savesObject;
-}
+  const savesObject = {};
+  const match = text.match(/\*\*Saving Throws\*\* (.*)/);
+  if (!match) return;
+  const savesMatch = [...(match[1].matchAll(/(\w{3}) \+([0-9]+)/g) || [])];
+  savesMatch.forEach((save) => {
+    savesObject[save[1]] = Number(save[2]);
+  });
+  return savesObject;
+};
 
 /**
  * Returns a creature's skills
@@ -185,15 +185,15 @@ const getSavingThrowMods = (text) => {
  * @param text - markdown text
  */
 const getSkills = (text) => {
-    const skillsObject = {};
-    const match = text.match(/\*\*Skills\*\* (.*)/);
-    if (!match) return;
-    const skills = [...(match[0].matchAll(/(\w+) \+([0-9]+)/g) || [])];
-    skills.forEach((skill) => {
-        skillsObject[skill[1]] = Number(skill[2]);
-    })
-    return skillsObject;
-}
+  const skillsObject = {};
+  const match = text.match(/\*\*Skills\*\* (.*)/);
+  if (!match) return;
+  const skills = [...(match[0].matchAll(/(\w+) \+([0-9]+)/g) || [])];
+  skills.forEach((skill) => {
+    skillsObject[skill[1]] = Number(skill[2]);
+  });
+  return skillsObject;
+};
 
 /**
  * Returns a creature's damage modifiers (Vulnerability, Resistance, Immunity)
@@ -203,32 +203,32 @@ const getSkills = (text) => {
  * @param text - markdown text
  */
 const getDamageModifiers = (text) => {
-    const modifiersObject = {}
-    const damageMatch = [...(text.matchAll(/\*\*(Damage \w+)\*\* (.*)/g) || [])];
-    const conditionMatch = [...(text.matchAll(/\*\*(Condition Immunities)\*\* (.*)/g) || [])]
-    damageMatch.forEach((modifier) => {
-        modifiersObject[modifier[1]] = modifier[2];
-    })
-    conditionMatch.forEach((modifier) => {
-        modifiersObject[modifier[1]] = modifier[2];
-    })
-    return modifiersObject;
-}
+  const modifiersObject = {};
+  const damageMatch = [...(text.matchAll(/\*\*(Damage \w+)\*\* (.*)/g) || [])];
+  const conditionMatch = [...(text.matchAll(/\*\*(Condition Immunities)\*\* (.*)/g) || [])];
+  damageMatch.forEach((modifier) => {
+    modifiersObject[modifier[1]] = modifier[2];
+  });
+  conditionMatch.forEach((modifier) => {
+    modifiersObject[modifier[1]] = modifier[2];
+  });
+  return modifiersObject;
+};
 
 const getVision = (visionText) => {
-    if (!visionText) return;
-    const matched = [...(visionText.matchAll(/(\w+) ([0-9]+)/g) || [])];
-    const out = {
-        'blindsight': 0,
-        'darkvision': 0,
-        'special': "",
-        'tremorsense': 0,
-        'truesight': 0,
-        'units': "ft"
-    }
-    matched.forEach((match) => out[match[1]] = Number(match[2]));
-    return out;
-}
+  if (!visionText) return;
+  const matched = [...(visionText.matchAll(/(\w+) ([0-9]+)/g) || [])];
+  const out = {
+    'blindsight': 0,
+    'darkvision': 0,
+    'special': '',
+    'tremorsense': 0,
+    'truesight': 0,
+    'units': 'ft'
+  };
+  matched.forEach((match) => out[match[1]] = Number(match[2]));
+  return out;
+};
 
 /**
  * Returns a creature's senses
@@ -238,12 +238,12 @@ const getVision = (visionText) => {
  * @param text - markdown text
  */
 const getSenses = (text) => {
-    const sensesObject = {};
-    const match = [...(text.match(/\*\*Senses\*\* ?(.*)?,? (passive Perception) ([0-9]+)/) || [])];
-    sensesObject["vision"] = getVision(match[1]);
-    sensesObject[match[2]] = match[3];
-    return sensesObject;
-}
+  const sensesObject = {};
+  const match = [...(text.match(/\*\*Senses\*\* ?(.*)?,? (passive Perception) ([0-9]+)/) || [])];
+  sensesObject['vision'] = getVision(match[1]);
+  sensesObject[match[2]] = match[3];
+  return sensesObject;
+};
 
 /**
  * Returns a creature's languages as a string
@@ -261,9 +261,9 @@ const getLanguages = (text) => [...(text.match(/\*\*Languages\*\* (.*)/) || [])]
  * @param text - markdown text
  */
 const getChallenge = (text) => {
-    const match = text.match(/\*\*Challenge\*\* (([0-9]+\/[0-9]+)|([0-9]+)) \((.*) XP\)/)
-    return {CR: eval(match[1]), XP: Number(match[4].replace(',', ''))};
-}
+  const match = text.match(/\*\*Challenge\*\* (([0-9]+\/[0-9]+)|([0-9]+)) \((.*) XP\)/);
+  return {CR: eval(match[1]), XP: Number(match[4].replace(',', ''))};
+};
 
 /**
  * Returns an attack's range.
@@ -276,27 +276,27 @@ const getChallenge = (text) => {
  * @param text - markdown text
  */
 const getAttackRange = (text) => {
-    let singleRangeMatch = text.match(/ ([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/);
-    let doubleRangeMatch = text.match(/ ([0-9]+)\/([0-9]+) (\w+)/);
-    const rangeObject = {
-        singleRange: {value: null, units: null, type: null},
-        doubleRange: {value: null, long: null, units: null}
-    };
+  let singleRangeMatch = text.match(/ ([0-9]+)([ \-])(ft|feet|foot)( line| cone| cube| sphere)?/);
+  let doubleRangeMatch = text.match(/ ([0-9]+)\/([0-9]+) (\w+)/);
+  const rangeObject = {
+    singleRange: {value: null, units: null, type: null},
+    doubleRange: {value: null, long: null, units: null}
+  };
 
-    if (singleRangeMatch) {
-        if (singleRangeMatch[4]) singleRangeMatch[4] = singleRangeMatch[4].replace(' ', '');
-        rangeObject.singleRange.value = singleRangeMatch[1];
-        rangeObject.singleRange.units = 'ft';
-        rangeObject.singleRange.type = singleRangeMatch[4];
-    }
-    if (doubleRangeMatch) {
-        rangeObject.doubleRange.value = doubleRangeMatch[1];
-        rangeObject.doubleRange.long = doubleRangeMatch[2];
-        rangeObject.doubleRange.units = 'ft';
-    }
+  if (singleRangeMatch) {
+    if (singleRangeMatch[4]) singleRangeMatch[4] = singleRangeMatch[4].replace(' ', '');
+    rangeObject.singleRange.value = singleRangeMatch[1];
+    rangeObject.singleRange.units = 'ft';
+    rangeObject.singleRange.type = singleRangeMatch[4];
+  }
+  if (doubleRangeMatch) {
+    rangeObject.doubleRange.value = doubleRangeMatch[1];
+    rangeObject.doubleRange.long = doubleRangeMatch[2];
+    rangeObject.doubleRange.units = 'ft';
+  }
 
-    return rangeObject;
-}
+  return rangeObject;
+};
 
 /**
  * Returns an attack's damage
@@ -304,13 +304,13 @@ const getAttackRange = (text) => {
  * @param text - markdown text
  */
 const getAttackDamage = (text) => {
-    const match = [...(text.matchAll(/\(([0-9]+d[0-9]+)( ?[+-] ?([0-9]+))?\) (\w+) damage/g) || [])];
-    const attackObject = [];
-    match.forEach((attack) => {
-        attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4], Number(attack[2]?.replace(/ /g, ''))]);
-    })
-    return attackObject
-}
+  const match = [...(text.matchAll(/\(([0-9]+d[0-9]+)( ?[+-] ?([0-9]+))?\) (\w+) damage/g) || [])];
+  const attackObject = [];
+  match.forEach((attack) => {
+    attackObject.push([`${attack[1]} ${attack[2] ? '+ @mod' : ''}`, attack[4], Number(attack[2]?.replace(/ /g, ''))]);
+  });
+  return attackObject;
+};
 
 /**
  * Returns an attack's save DC and ability
@@ -320,13 +320,13 @@ const getAttackDamage = (text) => {
  * @param text - markdown text
  */
 const getAttackSave = (text) => {
-    let match = text.match(/DC ([0-9]+) (\w+)/);
-    if (!match) return;
-    return {
-        'dc': Number(match[1]),
-        'ability': shortenAbilities(match[2])
-    }
-}
+  let match = text.match(/DC ([0-9]+) (\w+)/);
+  if (!match) return;
+  return {
+    'dc': Number(match[1]),
+    'ability': shortenAbilities(match[2])
+  };
+};
 
 /**
  * Returns an attacks to hit modifier
@@ -334,9 +334,9 @@ const getAttackSave = (text) => {
  * @param text - markdown text
  */
 const getAttackHit = (text) => {
-    const match = text.match(/([+-] ?[0-9]+) to hit/)
-    if (match) return Number(match[1].replace(' ', ''));
-}
+  const match = text.match(/([+-] ?[0-9]+) to hit/);
+  if (match) return Number(match[1].replace(' ', ''));
+};
 
 /**
  * Returns an attack
@@ -346,14 +346,14 @@ const getAttackHit = (text) => {
  * @param text - markdown text
  */
 const getAttack = (text) => {
-    return {
-        'damage': getAttackDamage(text),
-        'range': getAttackRange(text),
-        'save': getAttackSave(text),
-        'hit': getAttackHit(text),
-        'target': 1
-    }
-}
+  return {
+    'damage': getAttackDamage(text),
+    'range': getAttackRange(text),
+    'save': getAttackSave(text),
+    'hit': getAttackHit(text),
+    'target': 1
+  };
+};
 
 /**
  * Returns a creature's spellcasting details
@@ -363,10 +363,10 @@ const getAttack = (text) => {
  * @param text - markdown text
  */
 const getSpellcastingStats = (text) => {
-    const spellcastingLevel = [...(text.match(/([0-9]+)\w{1,2}-level spellcaster/) || [])];
-    const spellcastingModifier = [...(text.match(/spell ?casting ability is (\w+)/) || [])];
-    return {level: Number(spellcastingLevel[1]) || 0, modifier: spellcastingModifier[1]};
-}
+  const spellcastingLevel = [...(text.match(/([0-9]+)\w{1,2}-level spellcaster/) || [])];
+  const spellcastingModifier = [...(text.match(/spell ?casting ability is (\w+)/) || [])];
+  return {level: Number(spellcastingLevel[1]) || 0, modifier: spellcastingModifier[1]};
+};
 
 /**
  * Returns a creature's abilities
@@ -378,28 +378,28 @@ const getSpellcastingStats = (text) => {
  * @param text - markdown text
  */
 const getAbilities = (text) => {
-    const match = [...(text.matchAll(/\*\*\*(.*?)\.\*\*\* (.*)/g) || [])];
-    const extraMatch = [...(text.matchAll(/(&nbsp;)+\*\*(.*?)\.\*\* (.*)/g) || [])];
-    const abilitiesObject = {};
+  const match = [...(text.matchAll(/\*\*\*(.*?)\.\*\*\* (.*)/g) || [])];
+  const extraMatch = [...(text.matchAll(/(&nbsp;)+\*\*(.*?)\.\*\* (.*)/g) || [])];
+  const abilitiesObject = {};
 
-    match.forEach((ability) => {
-        abilitiesObject[ability[1]] = {
-            description: _clearText(ability[2]),
-            data: {}
-        };
-        if (ability[1] === 'Spellcasting' || ability[1] === 'Innate Spellcasting') abilitiesObject[ability[1]].data = getSpellcastingStats(ability[2]);
-        else abilitiesObject[ability[1]].data = getAttack(ability[2]);
-    });
+  match.forEach((ability) => {
+    abilitiesObject[ability[1]] = {
+      description: _clearText(ability[2]),
+      data: {}
+    };
+    if (ability[1] === 'Spellcasting' || ability[1] === 'Innate Spellcasting') abilitiesObject[ability[1]].data = getSpellcastingStats(ability[2]);
+    else abilitiesObject[ability[1]].data = getAttack(ability[2]);
+  });
 
-    extraMatch.forEach((extraAbility) => {
-        abilitiesObject[extraAbility[2]] = {
-            description: _clearText(extraAbility[3]),
-            data: {}
-        };
-        abilitiesObject[extraAbility[2]].data = getAttack(extraAbility[3]);
-    });
-    return abilitiesObject;
-}
+  extraMatch.forEach((extraAbility) => {
+    abilitiesObject[extraAbility[2]] = {
+      description: _clearText(extraAbility[3]),
+      data: {}
+    };
+    abilitiesObject[extraAbility[2]].data = getAttack(extraAbility[3]);
+  });
+  return abilitiesObject;
+};
 
 /**
  * Returns a creature's legendary actions
@@ -411,21 +411,21 @@ const getAbilities = (text) => {
  * @param text
  */
 const getLegendaryActions = (text) => {
-    const match = [...(text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g) || [])];
+  const match = [...(text.matchAll(/> \*\*(.*?)( \(Costs ([0-9]+) Actions\))?\.\*\* (.*)/g) || [])];
 
-    const actionObject = {};
-    match.forEach((action) => {
-        actionObject[action[1]] = {
-            description: action[4],
-            data: {},
-            cost: 1
-        };
-        actionObject[action[1]].data = getAttack(action[4]);
-        actionObject[action[1]].cost = action[3] ? action[3] : 1;
-    })
+  const actionObject = {};
+  match.forEach((action) => {
+    actionObject[action[1]] = {
+      description: action[4],
+      data: {},
+      cost: 1
+    };
+    actionObject[action[1]].data = getAttack(action[4]);
+    actionObject[action[1]].cost = action[3] ? action[3] : 1;
+  });
 
-    return actionObject;
-}
+  return actionObject;
+};
 
 /**
  * Returns the number of legendary actions from an actor
@@ -433,10 +433,10 @@ const getLegendaryActions = (text) => {
  * @param text - markdown text
  */
 const getNumberOfLegendaryActions = (text) => {
-    const legendaryActionDescription = text.match(/> .* can take ([0-9]+) legendary actions, .*/);
+  const legendaryActionDescription = text.match(/> .* can take ([0-9]+) legendary actions, .*/);
 
-    return Number(legendaryActionDescription?.[1]);
-}
+  return Number(legendaryActionDescription?.[1]);
+};
 
 /**
  * Returns the number of legendary resistances from an actor
@@ -444,10 +444,10 @@ const getNumberOfLegendaryActions = (text) => {
  * @param text - markdown text
  */
 const getNumberOfLegendaryResistances = (text) => {
-    const legendaryRes = text.match(/> \*\*\*Legendary Resistance \(([0-9]+)\/Day\)\.\*\*\*/);
+  const legendaryRes = text.match(/> \*\*\*Legendary Resistance \(([0-9]+)\/Day\)\.\*\*\*/);
 
-    return Number(legendaryRes?.[1]);
-}
+  return Number(legendaryRes?.[1]);
+};
 
 /**
  * Returns a creature's spell list
@@ -458,24 +458,26 @@ const getNumberOfLegendaryResistances = (text) => {
  * @param text - markdown text
  */
 const getSpells = (text) => {
-    const matchedSpells = [...(text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g) || [])];
-    const atWillSpells = [...(text.matchAll(/At will: _(.*)_<br>/g) || [])]
-    const reapeatableSpells = [...(text.matchAll(/([0-9]+\/day) each: _(.*)_/g) || [])]
-    let spellsObject = {};
-    matchedSpells.forEach((spell) => {
-        const typeOfSpell = spell[2] ? spell[2] : spell[1];
-        spellsObject[typeOfSpell] = spell[3].replace("*", "").split(",");
-    })
+  const matchedSpells = [...(text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g) || [])];
+  const atWillSpells = [...(text.matchAll(/At will: _(.*)_<br>/g) || [])];
+  const reapeatableSpells = [...(text.matchAll(/([0-9]+\/day) each: _(.*)_/g) || [])];
+  let spellsObject = {};
+  matchedSpells.forEach((spell) => {
+    const typeOfSpell = spell[2] ? spell[2] : spell[1];
+    spellsObject[typeOfSpell] = spell[3].replace('*', '').split(',');
+  });
+  if (atWillSpells)
     spellsObject = {
-        ...spellsObject,
-        atWill: atWillSpells[0][1].split(', ')
-    }
+      ...spellsObject,
+      atWill: atWillSpells?.[0]?.[1]?.split?.(', ')
+    };
+  if (reapeatableSpells)
     reapeatableSpells.forEach((spell) => {
-        spellsObject[spell[1]] = spell[2].split(', ')
-    })
+      spellsObject[spell[1]] = spell[2].split(', ');
+    });
 
-    return spellsObject;
-}
+  return spellsObject;
+};
 
 /**
  * Returns a creature's number of available spellslots
@@ -483,16 +485,16 @@ const getSpells = (text) => {
  * @param text - markdown text
  */
 const getSpellSlots = (text) => {
-    const matchedSlots = [...(text.matchAll(/([0-9]+)\w{1,2} level \(([0-9]+) slots?\)/g) || [])];
-    const slotsObject = {}
-    matchedSlots.forEach((slot) => {
-        slotsObject[`spell${slot[1]}`] = {
-            value: Number(slot[2]),
-            max: Number(slot[2])
-        };
-    })
-    return slotsObject;
-}
+  const matchedSlots = [...(text.matchAll(/([0-9]+)\w{1,2} level \(([0-9]+) slots?\)/g) || [])];
+  const slotsObject = {};
+  matchedSlots.forEach((slot) => {
+    slotsObject[`spell${slot[1]}`] = {
+      value: Number(slot[2]),
+      max: Number(slot[2])
+    };
+  });
+  return slotsObject;
+};
 
 /**
  * Returns a creature's proficiency
@@ -501,13 +503,13 @@ const getSpellSlots = (text) => {
  * @param abilities - an object of all the creatures abilities
  */
 const getProficiency = (abilities) => {
-    for (const key in abilities) {
-        if (!abilities.hasOwnProperty(key)) continue;
-        if (abilities[key]?.data?.hit && abilities[key]?.data?.damage?.[0]?.[2])
-            return abilities[key].data.hit - abilities[key].data.damage[0][2];
-    }
-    return 0;
-}
+  for (const key in abilities) {
+    if (!abilities.hasOwnProperty(key)) continue;
+    if (abilities[key]?.data?.hit && abilities[key]?.data?.damage?.[0]?.[2])
+      return abilities[key].data.hit - abilities[key].data.damage[0][2];
+  }
+  return 0;
+};
 
 /**
  * Returns the ability modifier given the ability score
@@ -517,27 +519,27 @@ const getProficiency = (abilities) => {
 const getAbilityModifier = (abilityScore) => Math.floor(abilityScore / 2 - 5);
 
 export {
-    getAbilityModifier,
-    shortenSkills,
-    convertResistance,
-    convertSizes,
-    shortenAbilities,
-    getCreatureSizeAndAlignment,
-    getCreatureName,
-    getAbilities,
-    getLegendaryActions,
-    getSpells,
-    getCreatureStats,
-    getSavingThrowMods,
-    getCreatureACAndSource,
-    getCreatureSpeed,
-    getCreatureHP,
-    getChallenge,
-    getLanguages,
-    getSenses,
-    getDamageModifiers,
-    getSkills,
-    getNumberOfLegendaryActions,
-    getNumberOfLegendaryResistances,
-    getSpellSlots
-}
+  getAbilityModifier,
+  shortenSkills,
+  convertResistance,
+  convertSizes,
+  shortenAbilities,
+  getCreatureSizeAndAlignment,
+  getCreatureName,
+  getAbilities,
+  getLegendaryActions,
+  getSpells,
+  getCreatureStats,
+  getSavingThrowMods,
+  getCreatureACAndSource,
+  getCreatureSpeed,
+  getCreatureHP,
+  getChallenge,
+  getLanguages,
+  getSenses,
+  getDamageModifiers,
+  getSkills,
+  getNumberOfLegendaryActions,
+  getNumberOfLegendaryResistances,
+  getSpellSlots
+};

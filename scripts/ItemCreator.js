@@ -30,7 +30,7 @@ const _getEntityFromCompendium = async (compendiums, spellName) => {
     for (const compendium of compendiums) {
         let entry = compendium.index.find(e => e.name.toLowerCase() === spellName);
         if (entry) {
-            return await compendium.getEntry(entry._id);
+            return await compendium.getDocument(entry._id);
         }
     }
     notificationCreator('warn', `${spellName} not found`)
@@ -44,10 +44,30 @@ const _getEntityFromCompendium = async (compendiums, spellName) => {
  * @private
  */
 
-const _prepareSpellsArray = async (spells, compendium) => {
+const _prepareSpellsArray = async (spells, compendium, key) => {
+    if (!spells) return [];
     for (let spell of spells) {
         let index = spells.indexOf(spell);
         spells[index] = JSON.parse(JSON.stringify(await _getEntityFromCompendium(compendium, spell.toLowerCase().trim())));
+
+        if (key.includes('/')) {
+            const [value, period] = key.split('/');
+            spells[index].data.uses = {
+                value: value,
+                max: value,
+                per: period
+            }
+            spells[index].data.preparation = {
+                mode: 'innate',
+                prepared: true
+            }
+        }
+        if (key === 'atWill') {
+            spells[index].data.preparation = {
+                mode: 'atwill',
+                prepared: true
+            }
+        }
     }
 
     return spells.filter(el => el != null)
@@ -65,7 +85,7 @@ const _prepareSpellsObject = async (spells) => {
     let spellsArray = [];
     for (const key in spells) {
         if (!spells.hasOwnProperty(key)) continue;
-        const newSpells = await _prepareSpellsArray(spells[key], compendiums);
+        const newSpells = await _prepareSpellsArray(spells[key], compendiums, key);
         spellsArray = [
             ...spellsArray,
             ...newSpells
@@ -84,6 +104,7 @@ const _prepareSpellsObject = async (spells) => {
 const spellsAdder = async (actor, spells) => {
     if (!spells) return;
     const spellList = await _prepareSpellsObject(spells);
+    console.log([...spellList])
 
     await actor.createEmbeddedDocuments("Item", [...spellList]);
 }
