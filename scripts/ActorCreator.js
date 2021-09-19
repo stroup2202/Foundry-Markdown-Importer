@@ -309,7 +309,6 @@ const _makeProps = (markdownText) => {
     }
   };
   props['proficiency'] = Math.max(Math.floor((props?.data?.details?.challenge?.CR - 1) / 4) + 2, 2);
-  console.log(props);
   return props;
 };
 

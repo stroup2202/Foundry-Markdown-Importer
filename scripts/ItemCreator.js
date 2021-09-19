@@ -104,7 +104,6 @@ const _prepareSpellsObject = async (spells) => {
 const spellsAdder = async (actor, spells) => {
     if (!spells) return;
     const spellList = await _prepareSpellsObject(spells);
-    console.log([...spellList])
 
     await actor.createEmbeddedDocuments("Item", [...spellList]);
 }
