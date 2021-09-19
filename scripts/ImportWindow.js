@@ -17,6 +17,6 @@ export default class ImportWindow extends Application {
 
     activateListeners(html) {
         super.activateListeners(html);
-        html.find(".text-input").change(() => actorCreator($("[name='text']")[0].value));
+        html.find(".import-button").click(() => actorCreator($("[name='text']")[0].value));
     }
 }
