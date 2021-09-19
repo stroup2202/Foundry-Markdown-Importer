@@ -365,7 +365,7 @@ const getAttack = (text) => {
 const getSpellcastingStats = (text) => {
     const spellcastingLevel = [...(text.match(/([0-9]+)\w{1,2}-level spellcaster/) || [])];
     const spellcastingModifier = [...(text.match(/spell ?casting ability is (\w+)/) || [])];
-    return {level: Number(spellcastingLevel[1]), modifier: spellcastingModifier[1]};
+    return {level: Number(spellcastingLevel[1]) || 0, modifier: spellcastingModifier[1]};
 }
 
 /**
@@ -387,7 +387,7 @@ const getAbilities = (text) => {
             description: _clearText(ability[2]),
             data: {}
         };
-        if (ability[1] === 'Spellcasting') abilitiesObject[ability[1]].data = getSpellcastingStats(ability[2]);
+        if (ability[1] === 'Spellcasting' || ability[1] === 'Innate Spellcasting') abilitiesObject[ability[1]].data = getSpellcastingStats(ability[2]);
         else abilitiesObject[ability[1]].data = getAttack(ability[2]);
     });
 
@@ -459,11 +459,21 @@ const getNumberOfLegendaryResistances = (text) => {
  */
 const getSpells = (text) => {
     const matchedSpells = [...(text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g) || [])];
-    const spellsObject = {};
+    const atWillSpells = [...(text.matchAll(/At will: _(.*)_<br>/g) || [])]
+    const reapeatableSpells = [...(text.matchAll(/([0-9]+\/day) each: _(.*)_/g) || [])]
+    let spellsObject = {};
     matchedSpells.forEach((spell) => {
         const typeOfSpell = spell[2] ? spell[2] : spell[1];
         spellsObject[typeOfSpell] = spell[3].replace("*", "").split(",");
     })
+    spellsObject = {
+        ...spellsObject,
+        atWill: atWillSpells[0][1].split(', ')
+    }
+    reapeatableSpells.forEach((spell) => {
+        spellsObject[spell[1]] = spell[2].split(', ')
+    })
+
     return spellsObject;
 }
 
