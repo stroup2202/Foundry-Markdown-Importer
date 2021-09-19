@@ -24,6 +24,26 @@ import {
   shortenSkills
 } from './MarkdownParser.js';
 
+const skillToAbilityMap = {
+  'Athletics': 'Str',
+  'Acrobatics': 'Dex',
+  'Sleight of Hand': 'Dex',
+  'Stealth': 'Dex',
+  'Arcana': 'Int',
+  'History': 'Int',
+  'Investigation': 'Int',
+  'Nature': 'Int',
+  'Religion': 'Int',
+  'Animal Handling': 'Wis',
+  'Insight': 'Wis',
+  'Medicine': 'Wis',
+  'Perception': 'Wis',
+  'Survival': 'Wis',
+  'Deception': 'Cha',
+  'Intimidation': 'Cha',
+  'Performance': 'Cha',
+  'Persuasion': 'Cha'
+}
 
 /**
  * Returns the foundry friendly structure for the ability scores
@@ -57,11 +77,13 @@ const _makeAbilitiesStructure = (stats, saves, proficiency) => {
  * @param proficiency - proficiency score
  * @private
  */
-const _makeSkillsStructure = (propSkills, proficiency) => {
+const _makeSkillsStructure = (propSkills, proficiency, creatureStats) => {
   const skillsObject = {};
   for (const skill in propSkills.skills) {
     if (!propSkills.skills.hasOwnProperty(skill)) continue;
-    skillsObject[shortenSkills(skill)] = {value: Math.floor(propSkills.skills[skill] / proficiency)};
+    skillsObject[shortenSkills(skill)] = {
+      value: Math.floor((propSkills.skills[skill] - ((creatureStats[skillToAbilityMap[skill]] - 10) / 2)) / proficiency)
+    };
   }
   return skillsObject;
 };
@@ -218,7 +240,7 @@ const _makeDataStructure = (propsData, creatureProficiency, creatureAbilities, c
     attributes: _makeAttributesStructure(propsData.attributes, creatureProficiency, creatureAbilities),
     details: _makeDetailsStructure(propsData.details, creatureAbilities),
     traits: _makeTraitsStructure(propsData.traits),
-    skills: _makeSkillsStructure(propsData.skills, creatureProficiency),
+    skills: _makeSkillsStructure(propsData.skills, creatureProficiency, creatureStats),
     resources: _makeResourcesStructure(propsData.resources),
     spells: propsData.spellslots
   };
