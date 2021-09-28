@@ -63,7 +63,7 @@ const _clearText = (text) => {
  * @param text - markdown text
  */
 const getCreatureName = (text) => {
-  const match = text.match(/> ## (.+)/);
+  const match = text.match(/>\s*##\s*(.+)/);
   if (!match) return;
   return match[1];
 };
