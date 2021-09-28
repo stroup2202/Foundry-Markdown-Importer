@@ -196,7 +196,10 @@ const _makeHpStructure = (propsHP) => {
 const _makeAttributesStructure = (propsAttributes, creatureProficiency, abilities) => {
   return {
     ac: {
-      value: Number(propsAttributes.armor['AC'])
+      base: Number(propsAttributes.armor['AC']),
+      flat: Number(propsAttributes.armor['AC']),
+      value: Number(propsAttributes.armor['AC']),
+      calc: 'natural'
     },
     hp: _makeHpStructure(propsAttributes.hp),
     movement: propsAttributes.movement,
