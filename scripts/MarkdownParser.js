@@ -458,22 +458,22 @@ const getNumberOfLegendaryResistances = (text) => {
  * @param text - markdown text
  */
 const getSpells = (text) => {
-  const matchedSpells = [...(text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _(.*)_/g) || [])];
-  const atWillSpells = [...(text.matchAll(/At will: _(.*)_<br>/g) || [])];
-  const reapeatableSpells = [...(text.matchAll(/([0-9]+\/day) each: _(.*)_/g) || [])];
+  const matchedSpells = [...(text.matchAll(/(Cantrips|([0-9]+)\w{1,2} level) \(.*\): _?(.*)_?/g) || [])];
+  const atWillSpells = [...(text.matchAll(/At will: _?(.*)_?(?:<br>)?/g) || [])];
+  const reapeatableSpells = [...(text.matchAll(/([0-9]+\/day)(?: each)?: _?(.*)_?/g) || [])];
   let spellsObject = {};
   matchedSpells.forEach((spell) => {
     const typeOfSpell = spell[2] ? spell[2] : spell[1];
-    spellsObject[typeOfSpell] = spell[3].replace('*', '').split(',');
+    spellsObject[typeOfSpell] = spell[3].replace(/\*|_|<br>/g, '').split(',');
   });
   if (atWillSpells)
     spellsObject = {
       ...spellsObject,
-      atWill: atWillSpells?.[0]?.[1]?.split?.(', ')
+      atWill: atWillSpells?.[0]?.[1]?.replaceAll?.(/\*|_|<br>/g, '')?.split?.(', ')
     };
   if (reapeatableSpells)
     reapeatableSpells.forEach((spell) => {
-      spellsObject[spell[1]] = spell[2].split(', ');
+      spellsObject[spell[1]] = spell[2].replaceAll(/\*|_|<br>/g, '').split(', ');
     });
 
   return spellsObject;
