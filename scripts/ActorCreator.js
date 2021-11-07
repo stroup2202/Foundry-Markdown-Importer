@@ -325,6 +325,10 @@ const actorCreator = async (markdownText) => {
     type: 'npc',
     sort: 12000,
     data: _makeDataStructure(props.data, props.proficiency, props.abilities, props.stats),
+    token: {
+      vision: true,
+      dimSight: data?.attributes?.senses?.darkvision ?? 0,
+    },
   }, {renderSheet: true});
 
   if (props.abilities) await abilitiesAdder(actor, props.abilities, props.stats);
