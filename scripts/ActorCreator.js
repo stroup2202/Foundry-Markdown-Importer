@@ -82,7 +82,7 @@ const _makeSkillsStructure = (propSkills, proficiency, creatureStats) => {
   for (const skill in propSkills.skills) {
     if (!propSkills.skills.hasOwnProperty(skill)) continue;
     skillsObject[shortenSkills(skill)] = {
-      value: Math.floor((propSkills.skills[skill] - ((creatureStats[skillToAbilityMap[skill]] - 10) / 2)) / proficiency)
+      value: (propSkills.skills[skill] - Math.floor((creatureStats[skillToAbilityMap[skill]] - 10) / 2)) / proficiency
     };
   }
   return skillsObject;
