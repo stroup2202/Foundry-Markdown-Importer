@@ -327,7 +327,7 @@ const actorCreator = async (markdownText) => {
     data: _makeDataStructure(props.data, props.proficiency, props.abilities, props.stats),
     token: {
       vision: true,
-      dimSight: data?.attributes?.senses?.darkvision ?? 0,
+      dimSight: props.data?.attributes?.senses?.darkvision ?? 0,
     },
   }, {renderSheet: true});
 
