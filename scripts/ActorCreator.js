@@ -80,9 +80,11 @@ const _makeAbilitiesStructure = (stats, saves, proficiency) => {
 const _makeSkillsStructure = (propSkills, proficiency, creatureStats) => {
   const skillsObject = {};
   for (const skill in propSkills.skills) {
+    let value = (propSkills.skills[skill] - Math.floor((creatureStats[skillToAbilityMap[skill]] - 10) / 2)) / proficiency;
+    if (0 < value < 1) value = 0.5;
     if (!propSkills.skills.hasOwnProperty(skill)) continue;
     skillsObject[shortenSkills(skill)] = {
-      value: Math.floor((propSkills.skills[skill] - ((creatureStats[skillToAbilityMap[skill]] - 10) / 2)) / proficiency)
+      value
     };
   }
   return skillsObject;
@@ -323,6 +325,10 @@ const actorCreator = async (markdownText) => {
     type: 'npc',
     sort: 12000,
     data: _makeDataStructure(props.data, props.proficiency, props.abilities, props.stats),
+    token: {
+      vision: true,
+      dimSight: data?.attributes?.senses?.darkvision ?? 0,
+    },
   }, {renderSheet: true});
 
   if (props.abilities) await abilitiesAdder(actor, props.abilities, props.stats);
