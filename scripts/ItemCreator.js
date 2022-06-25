@@ -179,6 +179,15 @@ const _getActivation = (ability) => {
   return activationObject;
 };
 
+const makeDiceRollable = (description) => {
+  return description.replaceAll(/(\dd\d ?[+-]? ?\d?)/g, (match) => {
+    return `
+      <a class="inline-roll roll" title="${match}" data-mode="roll" data-flavor="" data-formula="${match}">
+        ${match}
+      </a>`
+  })
+}
+
 /**
  * Creates the item to be added to the actor
  *
@@ -193,7 +202,7 @@ const itemCreator = async (actor, itemName, itemData, actorStats) => {
     name: itemName,
     type: itemData?.data?.damage?.[0]?.[2] ? 'weapon' : 'feat',
     data: {
-      description: {value: itemData['description']},
+      description: {value: makeDiceRollable(itemData['description'])},
       activation: _getActivation(itemData),
       ability: _getAttackAbility(itemData, actorStats),
       actionType: itemData?.data?.damage?.[0]?.[2] ? 'mwak' : null,
