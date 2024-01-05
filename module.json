@@ -2,12 +2,20 @@
   "name": "Tetra-Cube-Importer",
   "title": "Tetra-Cube Importer",
   "description": "Ever wanted to import a custom monster into Foundry? Well now you can, you can create your monsters on Tetra-Cube or on MonsterShuffler using their tools, export them to Markdown and then bring them into Foundry.",
-  "author": "HadaIonut",
+  "authors": [
+    {
+      "HadaIonut",
+      "stroup2202"
+    }
+  ],
   "version": "1.3.3",
   "esmodules": ["scripts/MarkdownImporter.js"],
   "styles": ["styles/style.css"],
   "minimumCoreVersion": "0.8.2",
-  "compatibleCoreVersion": "10",
+  "compatibility": {
+    "minimum": "10",
+    "verified": "11"
+  }
   "relationships.systems": ["dnd5e"],
   "url": "https://github.com/HadaIonut/Foundry-Markdown-Importer",
   "manifest": "https://github.com/HadaIonut/Foundry-Markdown-Importer/releases/download/v1.3.3/module.json",
