@@ -14,7 +14,7 @@
   "compatibility": {
     "minimum": "10",
     "verified": "11"
-  }
+  },
   "relationships.systems": ["dnd5e"],
   "url": "https://github.com/HadaIonut/Foundry-Markdown-Importer",
   "manifest": "https://github.com/HadaIonut/Foundry-Markdown-Importer/releases/download/v1.3.3/module.json",
