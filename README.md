@@ -12,3 +12,5 @@ To use this module simply create a monster on http://tetra-cube.com/dnd/dnd-stat
 ## Instalation
 
 Can be either installed from the module.json file available in the latest release or in the Foundry Module Browser.
+
+Original created by Hadalonut
