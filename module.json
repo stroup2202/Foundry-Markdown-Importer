@@ -4,8 +4,7 @@
   "description": "Ever wanted to import a custom monster into Foundry? Well now you can, you can create your monsters on Tetra-Cube or on MonsterShuffler using their tools, export them to Markdown and then bring them into Foundry.",
   "authors": [
     {
-      "name": "HadaIonut",
-      "name": "stroup2202"
+      "name": "HadaIonut"
     }
   ],
   "version": "1.3.3",
